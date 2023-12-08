@@ -14,6 +14,5 @@ type Customer struct {
 	CreatedAt time.Time      `json:"createdAt" gorm:"index;default:CURRENT_TIMESTAMP"`
 	UpdatedAt time.Time      `json:"updatedAt" gorm:"index;default:CURRENT_TIMESTAMP"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"deletedAt,omitempty"`
-	UpdatedBy uint           `gorm:"not null; default: 0" json:"updatedBy"`
 	Invoices  []Invoice      `gorm:"foreignKey:CustomerID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"invoices"`
 }
