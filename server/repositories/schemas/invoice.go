@@ -12,13 +12,13 @@ type Invoice struct {
 	IssueDate   time.Time      `gorm:"not null" json:"issueDate"`
 	DueDate     time.Time      `gorm:"not null" json:"dueDate"`
 	CustomerID  uint           `gorm:"not null" json:"customerId" gorm:"index"`
-	Subtotal    float64        `gorm:"not null" json:"subtotal"`
-	TaxRate     float64        `gorm:"not null" json:"taxRate"`
-	TaxAmount   float64        `gorm:"not null" json:"taxAmount"`
-	TotalAmount float64        `gorm:"not null" json:"totalAmount"`
+	Subtotal    float64        `gorm:"not null; type:decimal(10,2)" json:"subtotal"`
+	TaxRate     float64        `gorm:"not null; type:decimal(10,2)" json:"taxRate"`
+	TaxAmount   float64        `gorm:"not null; type:decimal(10,2)" json:"taxAmount"`
+	TotalAmount float64        `gorm:"not null; type:decimal(10,2)" json:"totalAmount"`
 	InvoiceItem InvoiceItem    `gorm:"foreignKey:InvoiceID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"invoiceItem"`
 	Customer    Customer       `gorm:"foreignKey:CustomerID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"customer"`
-	CreatedAt   time.Time      `json:"createdAt" gorm:"index;default:CURRENT_TIMESTAMP"`
-	UpdatedAt   time.Time      `json:"updatedAt" gorm:"index;default:CURRENT_TIMESTAMP"`
+	CreatedAt   time.Time      `json:"createdAt" gorm:"not null"`
+	UpdatedAt   time.Time      `json:"updatedAt" gorm:"not null, autoUpdateTime"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"deletedAt,omitempty"`
 }
