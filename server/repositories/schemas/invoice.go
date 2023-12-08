@@ -16,7 +16,7 @@ type Invoice struct {
 	TaxRate     float64        `gorm:"not null" json:"taxRate"`
 	TaxAmount   float64        `gorm:"not null" json:"taxAmount"`
 	TotalAmount float64        `gorm:"not null" json:"totalAmount"`
-	DetailItem  DetailItem     `gorm:"foreignKey:DetailitemID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"detailItem"`
+	InvoiceItem InvoiceItem    `gorm:"foreignKey:InvoiceID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"invoiceItem"`
 	Customer    Customer       `gorm:"foreignKey:CustomerID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"customer"`
 	CreatedAt   time.Time      `json:"createdAt" gorm:"index;default:CURRENT_TIMESTAMP"`
 	UpdatedAt   time.Time      `json:"updatedAt" gorm:"index;default:CURRENT_TIMESTAMP"`
