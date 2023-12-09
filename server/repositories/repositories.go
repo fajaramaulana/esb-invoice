@@ -16,7 +16,7 @@ type TypeRepo interface {
 type ItemRepo interface {
 	Create(item *schemas.Item) (int, error)
 	FindById(id int) (*schemas.Item, error)
-	FindAll() ([]schemas.Item, error)
+	FindAll(filter filters.ItemFilter, page int, pageSize int) ([]schemas.Item, int64, error)
 	UpdateById(id int, update *schemas.Item) (*schemas.Item, error)
 	SoftDelete(id int) error
 }
