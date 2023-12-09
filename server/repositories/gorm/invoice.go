@@ -23,7 +23,11 @@ func (r *invoiceRepo) FindAll(filter filters.InvoiceFilter, page int, pageSize i
 	var invoices []schemas.Invoice
 	var totalRecords int64
 
-	query := r.db.Model(&schemas.Customer{})
+	query := r.db.Model(&schemas.Invoice{})
+
+	if query.Error != nil {
+		return nil, 0, query.Error
+	}
 
 	// Apply filters based on the InvoiceFilter
 	if filter.InvoiceID != 0 {
