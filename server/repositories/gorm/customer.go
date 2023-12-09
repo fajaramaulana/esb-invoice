@@ -88,6 +88,7 @@ func (r *customerRepo) UpdateById(id int, update *schemas.Customer) (*schemas.Cu
 
 	// update fields
 	existingCustomer.Name = update.Name
+	existingCustomer.UpdatedAt = update.UpdatedAt
 
 	// save the changes
 	result = r.db.Save(&existingCustomer)
