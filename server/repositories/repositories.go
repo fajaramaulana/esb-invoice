@@ -24,7 +24,7 @@ type ItemRepo interface {
 type CustomerRepo interface {
 	Create(item *schemas.Customer) (int, error)
 	FindById(id int) (*schemas.Customer, error)
-	FindAll() ([]schemas.Customer, error)
+	FindAll(filter filters.CustomerFilter, page int, pageSize int) ([]schemas.Customer, int64, error)
 	UpdateById(id int, update *schemas.Customer) (*schemas.Customer, error)
 	SoftDelete(id int) error
 }
