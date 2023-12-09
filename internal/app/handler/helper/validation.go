@@ -81,6 +81,7 @@ func DoValidation(i interface{}) map[string]string {
 			case "endswith":
 				message[e.Field()] = fmt.Sprintf("%s must end with %s", e.Field(), e.Param())
 			}
+
 		}
 
 		return message
