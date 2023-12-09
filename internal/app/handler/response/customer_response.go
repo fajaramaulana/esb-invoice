@@ -52,8 +52,3 @@ type ReturnResponseGetAll struct {
 	Data         GetAllCustomer `json:"data"`
 	TotalRecords int            `json:"totalRecords"`
 }
-
-type ReturnResponseError struct {
-	Meta Meta     `json:"meta"`
-	Data struct{} `json:"data"`
-}

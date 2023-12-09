@@ -36,21 +36,14 @@ func NewCustomerController(customerService *service.CustomerService) *CustomerCo
 // @Router api/v1/customer [post]
 func (c *CustomerController) CreateCustomer(ctx *gin.Context) {
 	var req request.CreateCustomerRequest
-	var errMessage string
 
 	// Bind request body to struct
 	// If the structure of the body is wrong, return an HTTP error with status code 400
 	// request should json or form-data
 	if err := ctx.ShouldBind(&req); err != nil {
-		// print log on console
-		if err.Error() == "EOF" {
-			log.Println("Error: Request body is empty")
-			errMessage = "Request body is empty. " + err.Error()
-		} else {
-			log.Println("Error:", err.Error())
-			errMessage = err.Error()
-		}
-		helper.ReturnJSON(ctx, http.StatusBadRequest, errMessage, nil)
+		returnDataErrorCheck := helper.ExtractFieldNameFromError(err.Error())
+		log.Println("Error: Validation error")
+		helper.ReturnJSON(ctx, http.StatusBadRequest, "Validation error", returnDataErrorCheck)
 		return
 	}
 
@@ -104,10 +97,8 @@ func (c *CustomerController) CreateCustomer(ctx *gin.Context) {
 
 func (c *CustomerController) UpdateCustomer(ctx *gin.Context) {
 	var req request.UpdateCustomerRequest
-	var errMessage string
-
 	id := ctx.Param("id")
-	strId, err := helper.ConvertStringToInt(id)
+	intId, err := helper.ConvertStringToInt(id)
 	if err != nil {
 		log.Println("Error:", err)
 		helper.ReturnJSON(ctx, http.StatusBadRequest, err.Error(), nil)
@@ -118,15 +109,9 @@ func (c *CustomerController) UpdateCustomer(ctx *gin.Context) {
 	// If the structure of the body is wrong, return an HTTP error with status code 400
 	// request should json or form-data
 	if err := ctx.ShouldBind(&req); err != nil {
-		// print log on console
-		if err.Error() == "EOF" {
-			log.Println("Error: Request body is empty")
-			errMessage = "Request body is empty. " + err.Error()
-		} else {
-			log.Println("Error:", err.Error())
-			errMessage = err.Error()
-		}
-		helper.ReturnJSON(ctx, http.StatusBadRequest, errMessage, nil)
+		returnDataErrorCheck := helper.ExtractFieldNameFromError(err.Error())
+		log.Println("Error: Validation error")
+		helper.ReturnJSON(ctx, http.StatusBadRequest, "Validation error", returnDataErrorCheck)
 		return
 	}
 
@@ -154,7 +139,7 @@ func (c *CustomerController) UpdateCustomer(ctx *gin.Context) {
 		return
 	}
 
-	customerId, err := c.customerService.UpdateById(strId, &req)
+	customerId, err := c.customerService.UpdateById(intId, &req)
 
 	if err != nil {
 		log.Println("Error:", err)
@@ -181,14 +166,14 @@ func (c *CustomerController) UpdateCustomer(ctx *gin.Context) {
 // @Router api/v1/customer/{id} [delete]
 func (c *CustomerController) DeleteCustomer(ctx *gin.Context) {
 	id := ctx.Param("id")
-	strId, err := helper.ConvertStringToInt(id)
+	intId, err := helper.ConvertStringToInt(id)
 	if err != nil {
 		log.Println("Error:", err)
 		helper.ReturnJSON(ctx, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
-	err = c.customerService.SoftDelete(strId)
+	err = c.customerService.SoftDelete(intId)
 
 	if err != nil {
 		log.Println("Error:", err)
@@ -200,7 +185,7 @@ func (c *CustomerController) DeleteCustomer(ctx *gin.Context) {
 		return
 	}
 
-	helper.ReturnJSON(ctx, http.StatusOK, "Customer deleted", response.DeleteCustomerResponse{Id: strId})
+	helper.ReturnJSON(ctx, http.StatusOK, "Customer deleted", response.DeleteCustomerResponse{Id: intId})
 }
 
 // FindCustomerById godoc
@@ -216,14 +201,14 @@ func (c *CustomerController) DeleteCustomer(ctx *gin.Context) {
 
 func (c *CustomerController) FindCustomerById(ctx *gin.Context) {
 	id := ctx.Param("id")
-	strId, err := helper.ConvertStringToInt(id)
+	intId, err := helper.ConvertStringToInt(id)
 	if err != nil {
 		log.Println("Error:", err)
 		helper.ReturnJSON(ctx, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
-	customer, err := c.customerService.FindById(strId)
+	customer, err := c.customerService.FindById(intId)
 
 	if err != nil {
 		log.Println("Error:", err)
