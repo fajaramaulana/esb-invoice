@@ -1,9 +1,9 @@
 package gorm
 
 import (
-	"esb-invoice/server/repositories"
-	"esb-invoice/server/repositories/filters"
-	"esb-invoice/server/repositories/schemas"
+	"esb-invoice/internal/app/handler/filters"
+	"esb-invoice/internal/domain/model"
+	"esb-invoice/internal/domain/repository"
 
 	"gorm.io/gorm"
 )
@@ -12,24 +12,24 @@ type customerRepo struct {
 	db *gorm.DB
 }
 
-func NewCustomerRepository(db *gorm.DB) repositories.CustomerRepo {
+func NewCustomerRepository(db *gorm.DB) repository.CustomerRepo {
 	return &customerRepo{
 		db: db,
 	}
 }
 
 // Create implements repositories.CustomerRepo.
-func (r *customerRepo) Create(comment *schemas.Customer) (int, error) {
+func (r *customerRepo) Create(comment *model.Customer) (int, error) {
 	err := r.db.Create(comment).Error
 	return comment.ID, err
 }
 
 // FindAll implements repositories.CustomerRepo.
-func (r *customerRepo) FindAll(filter filters.CustomerFilter, page int, pageSize int) ([]schemas.Customer, int64, error) {
-	var customers []schemas.Customer
+func (r *customerRepo) FindAll(filter filters.CustomerFilter, page int, pageSize int) ([]model.Customer, int64, error) {
+	var customers []model.Customer
 	var totalRecords int64
 
-	query := r.db.Model(&schemas.Customer{})
+	query := r.db.Model(&model.Customer{})
 
 	if query.Error != nil {
 		return nil, 0, query.Error
@@ -55,15 +55,15 @@ func (r *customerRepo) FindAll(filter filters.CustomerFilter, page int, pageSize
 }
 
 // FindById implements repositories.CustomerRepo.
-func (r *customerRepo) FindById(id int) (*schemas.Customer, error) {
-	var customer schemas.Customer
+func (r *customerRepo) FindById(id int) (*model.Customer, error) {
+	var customer model.Customer
 	err := r.db.First(&customer, id).Error
 	return &customer, err
 }
 
 // SoftDelete implements repositories.CustomerRepo.
 func (r *customerRepo) SoftDelete(id int) error {
-	result := r.db.Delete(&schemas.Customer{}, id)
+	result := r.db.Delete(&model.Customer{}, id)
 
 	if result.Error != nil {
 		return result.Error
@@ -77,8 +77,8 @@ func (r *customerRepo) SoftDelete(id int) error {
 }
 
 // UpdateById implements repositories.CustomerRepo.
-func (r *customerRepo) UpdateById(id int, update *schemas.Customer) (*schemas.Customer, error) {
-	var existingCustomer schemas.Customer
+func (r *customerRepo) UpdateById(id int, update *model.Customer) (*model.Customer, error) {
+	var existingCustomer model.Customer
 
 	// Find the existing invoice by ID
 	result := r.db.First(&existingCustomer, id)

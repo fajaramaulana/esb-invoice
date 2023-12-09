@@ -1,4 +1,4 @@
-package schemas
+package model
 
 import (
 	"time"

@@ -1,7 +1,7 @@
-package db
+package seeders
 
 import (
-	"esb-invoice/server/repositories/schemas"
+	"esb-invoice/internal/domain/model"
 	"log"
 	"time"
 
@@ -38,7 +38,7 @@ func SeederDB(dbInstance *gorm.DB) error {
 }
 
 func seedCustomers(dbdbInstance *gorm.DB) error {
-	customers := []schemas.Customer{
+	customers := []model.Customer{
 		{
 			Name:      "Barrington Publishers",
 			Email:     "barringtonpublisher@gmail.com",
@@ -64,7 +64,7 @@ func seedCustomers(dbdbInstance *gorm.DB) error {
 }
 
 func seedType(dbdbInstance *gorm.DB) error {
-	typeItem := []schemas.Type{
+	typeItem := []model.Type{
 		{
 			Name:      "Service",
 			CreatedAt: time.Now(),
@@ -86,7 +86,7 @@ func seedType(dbdbInstance *gorm.DB) error {
 }
 
 func seedItem(dbdbInstance *gorm.DB) error {
-	item := []schemas.Item{
+	item := []model.Item{
 		{
 			Name:   "Design",
 			Price:  41.00,

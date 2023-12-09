@@ -2,7 +2,9 @@ package main
 
 import (
 	"esb-invoice/config/db"
+	"esb-invoice/seeders"
 	"log"
+	"os"
 
 	"github.com/joho/godotenv"
 )
@@ -20,8 +22,11 @@ import (
 
 func main() {
 	// Load environment variables
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file:", err)
+	checkGoEnv := os.Getenv("GO_ENV")
+	if checkGoEnv == "" { // if GO_ENV is empty, set to development
+		if err := godotenv.Load("../.env"); err != nil {
+			log.Fatal("Error loading .env file:", err)
+		}
 	}
 
 	// connect to database
@@ -30,7 +35,7 @@ func main() {
 		log.Fatal("Error connecting to the database:", err)
 	}
 
-	err = db.SeederDB(dbInstance)
+	err = seeders.SeederDB(dbInstance)
 
 	if err != nil {
 		log.Fatal("Error Seeding DB:", err)

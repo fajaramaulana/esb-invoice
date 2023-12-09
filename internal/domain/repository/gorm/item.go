@@ -1,9 +1,9 @@
 package gorm
 
 import (
-	"esb-invoice/server/repositories"
-	"esb-invoice/server/repositories/filters"
-	"esb-invoice/server/repositories/schemas"
+	"esb-invoice/internal/app/handler/filters"
+	"esb-invoice/internal/domain/model"
+	"esb-invoice/internal/domain/repository"
 
 	"gorm.io/gorm"
 )
@@ -12,22 +12,28 @@ type itemRepo struct {
 	db *gorm.DB
 }
 
+func NewItemRepository(db *gorm.DB) repository.ItemRepo {
+	return &itemRepo{
+		db: db,
+	}
+}
+
 // Create implements repositories.ItemRepo.
-func (r *itemRepo) Create(item *schemas.Item) (int, error) {
+func (r *itemRepo) Create(item *model.Item) (int, error) {
 	err := r.db.Create(item).Error
 	return int(item.ID), err
 }
 
 // FindById implements repositories.ItemRepo.
-func (r *itemRepo) FindById(id int) (*schemas.Item, error) {
-	var item schemas.Item
+func (r *itemRepo) FindById(id int) (*model.Item, error) {
+	var item model.Item
 	err := r.db.First(&item, id).Error
 	return &item, err
 }
 
 // SoftDelete implements repositories.ItemRepo.
 func (r *itemRepo) SoftDelete(id int) error {
-	result := r.db.Delete(&schemas.Item{}, id)
+	result := r.db.Delete(&model.Item{}, id)
 
 	if result.Error != nil {
 		return result.Error
@@ -41,8 +47,8 @@ func (r *itemRepo) SoftDelete(id int) error {
 }
 
 // UpdateById implements repositories.ItemRepo.
-func (r *itemRepo) UpdateById(id int, update *schemas.Item) (*schemas.Item, error) {
-	var existingItem schemas.Item
+func (r *itemRepo) UpdateById(id int, update *model.Item) (*model.Item, error) {
+	var existingItem model.Item
 
 	// Find the existing Item by ID
 	result := r.db.First(&existingItem, id)
@@ -66,11 +72,11 @@ func (r *itemRepo) UpdateById(id int, update *schemas.Item) (*schemas.Item, erro
 	return &existingItem, nil
 }
 
-func (r *itemRepo) FindAll(filter filters.ItemFilter, page int, pageSize int) ([]schemas.Item, int64, error) {
-	var items []schemas.Item
+func (r *itemRepo) FindAll(filter filters.ItemFilter, page int, pageSize int) ([]model.Item, int64, error) {
+	var items []model.Item
 	var totalRecords int64
 
-	query := r.db.Model(&schemas.Item{})
+	query := r.db.Model(&model.Item{})
 
 	if query.Error != nil {
 		return nil, 0, query.Error
@@ -102,10 +108,4 @@ func (r *itemRepo) FindAll(filter filters.ItemFilter, page int, pageSize int) ([
 
 	return items, totalRecords, nil
 
-}
-
-func NewItemRepository(db *gorm.DB) repositories.ItemRepo {
-	return &itemRepo{
-		db: db,
-	}
 }

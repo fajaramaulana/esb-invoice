@@ -1,9 +1,9 @@
 package gorm
 
 import (
-	"esb-invoice/server/repositories"
-	"esb-invoice/server/repositories/filters"
-	"esb-invoice/server/repositories/schemas"
+	"esb-invoice/internal/app/handler/filters"
+	"esb-invoice/internal/domain/model"
+	"esb-invoice/internal/domain/repository"
 
 	"gorm.io/gorm"
 )
@@ -12,18 +12,24 @@ type invoiceRepo struct {
 	db *gorm.DB
 }
 
+func NewInvoiceRepository(db *gorm.DB) repository.InvoiceRepo {
+	return &invoiceRepo{
+		db: db,
+	}
+}
+
 // Create implements repositories.InvoiceRepo.
-func (r *invoiceRepo) Create(invoice *schemas.Invoice) (int, error) {
+func (r *invoiceRepo) Create(invoice *model.Invoice) (int, error) {
 	err := r.db.Create(invoice).Error
 	return int(invoice.InvoiceID), err
 }
 
 // FindAll implements repositories.InvoiceRepo.
-func (r *invoiceRepo) FindAll(filter filters.InvoiceFilter, page int, pageSize int) ([]schemas.Invoice, int64, error) {
-	var invoices []schemas.Invoice
+func (r *invoiceRepo) FindAll(filter filters.InvoiceFilter, page int, pageSize int) ([]model.Invoice, int64, error) {
+	var invoices []model.Invoice
 	var totalRecords int64
 
-	query := r.db.Model(&schemas.Invoice{})
+	query := r.db.Model(&model.Invoice{})
 
 	if query.Error != nil {
 		return nil, 0, query.Error
@@ -77,15 +83,15 @@ func (r *invoiceRepo) FindAll(filter filters.InvoiceFilter, page int, pageSize i
 }
 
 // FindById implements repositories.InvoiceRepo.
-func (r *invoiceRepo) FindById(id int) (*schemas.Invoice, error) {
-	var invoice schemas.Invoice
+func (r *invoiceRepo) FindById(id int) (*model.Invoice, error) {
+	var invoice model.Invoice
 	err := r.db.First(&invoice, id).Error
 	return &invoice, err
 }
 
 // SoftDelete implements repositories.InvoiceRepo.
 func (r *invoiceRepo) SoftDelete(id int) error {
-	result := r.db.Delete(&schemas.Invoice{}, id)
+	result := r.db.Delete(&model.Invoice{}, id)
 
 	if result.Error != nil {
 		return result.Error
@@ -99,8 +105,8 @@ func (r *invoiceRepo) SoftDelete(id int) error {
 }
 
 // UpdateById implements repositories.InvoiceRepo.
-func (r *invoiceRepo) UpdateById(id int, update *schemas.Invoice) (*schemas.Invoice, error) {
-	var existingInvoice schemas.Invoice
+func (r *invoiceRepo) UpdateById(id int, update *model.Invoice) (*model.Invoice, error) {
+	var existingInvoice model.Invoice
 
 	// Find the existing invoice by ID
 	result := r.db.First(&existingInvoice, id)
@@ -132,8 +138,8 @@ func (r *invoiceRepo) UpdateById(id int, update *schemas.Invoice) (*schemas.Invo
 }
 
 // UpdateStatusPaid implements repositories.InvoiceRepo.
-func (r *invoiceRepo) UpdateStatusPaid(id int, paymentStatus int) (*schemas.Invoice, error) {
-	var existingInvoice schemas.Invoice
+func (r *invoiceRepo) UpdateStatusPaid(id int, paymentStatus int) (*model.Invoice, error) {
+	var existingInvoice model.Invoice
 
 	result := r.db.First(&existingInvoice, id)
 
@@ -151,10 +157,4 @@ func (r *invoiceRepo) UpdateStatusPaid(id int, paymentStatus int) (*schemas.Invo
 	}
 
 	return &existingInvoice, nil
-}
-
-func NewInvoiceRepository(db *gorm.DB) repositories.InvoiceRepo {
-	return &invoiceRepo{
-		db: db,
-	}
 }
