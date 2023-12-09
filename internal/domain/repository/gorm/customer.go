@@ -37,7 +37,16 @@ func (r *customerRepo) FindAll(filter filters.CustomerFilter, page int, pageSize
 
 	// Apply filters based on the CustomerFilter
 	if filter.Name != "" {
-		query = query.Where("invoice_id = ?", filter.Name)
+		query = query.Where("name LIKE ?", "%"+filter.Name+"%")
+	}
+
+	if filter.Email != "" {
+		query = query.Where("email LIKE ?", "%"+filter.Email+"%")
+	}
+
+	if filter.Address != "" {
+		// where like
+		query = query.Where("address LIKE ?", "%"+filter.Address+"%")
 	}
 
 	// Pagination
@@ -88,6 +97,7 @@ func (r *customerRepo) UpdateById(id int, update *model.Customer) (*model.Custom
 
 	// update fields
 	existingCustomer.Name = update.Name
+	existingCustomer.Email = update.Email
 	existingCustomer.UpdatedAt = update.UpdatedAt
 
 	// save the changes
@@ -98,4 +108,26 @@ func (r *customerRepo) UpdateById(id int, update *model.Customer) (*model.Custom
 	}
 
 	return &existingCustomer, nil
+}
+
+func (r *customerRepo) FindByEmail(email string) (*model.Customer, error) {
+	var customer model.Customer
+	err := r.db.Where("email = ?", email).First(&customer).Error
+	return &customer, err
+}
+
+func (r *customerRepo) CountAll() (int64, error) {
+	var totalRecords int64
+
+	query := r.db.Model(&model.Customer{})
+
+	if query.Error != nil {
+		return 0, query.Error
+	}
+
+	if err := query.Count(&totalRecords).Error; err != nil {
+		return 0, err
+	}
+
+	return totalRecords, nil
 }

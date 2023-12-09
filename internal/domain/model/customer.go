@@ -9,7 +9,7 @@ import (
 type Customer struct {
 	ID        int            `gorm:"primaryKey;autoIncrement" json:"id"`
 	Name      string         `gorm:"not null; type:varchar(255)" json:"name"`
-	Email     string         `gorm:"not null; unique; type:varchar(100); index" json:"email"`
+	Email     string         `gorm:"not null; type:varchar(100); index" json:"email"`
 	Address   string         `gorm:"not null; type:text" json:"address"`
 	CreatedAt time.Time      `json:"createdAt" gorm:"not null"`
 	UpdatedAt time.Time      `json:"updatedAt" gorm:"not null, autoUpdateTime"`

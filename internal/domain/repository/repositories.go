@@ -27,6 +27,8 @@ type CustomerRepo interface {
 	FindAll(filter filters.CustomerFilter, page int, pageSize int) ([]model.Customer, int64, error)
 	UpdateById(id int, update *model.Customer) (*model.Customer, error)
 	SoftDelete(id int) error
+	FindByEmail(email string) (*model.Customer, error)
+	CountAll() (int64, error)
 }
 
 type InvoiceRepo interface {
