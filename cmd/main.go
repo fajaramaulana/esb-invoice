@@ -1,7 +1,7 @@
 package main
 
 import (
-	"esb-invoice/config/db"
+	"esb-invoice/internal/app/config/db"
 	"esb-invoice/seeders"
 	"log"
 	"os"
