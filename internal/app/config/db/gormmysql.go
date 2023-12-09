@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -15,14 +14,6 @@ import (
 type Schema interface{}
 
 func ConnectionMysqlGorm() (*gorm.DB, error) {
-	checkGoEnv := os.Getenv("GO_ENV")
-	if checkGoEnv == "" { // if GO_ENV is empty, set to development
-		err := godotenv.Load("../.env")
-		if err != nil {
-			log.Fatalf("Error load env %s", err)
-			return nil, err
-		}
-	}
 
 	dsn := os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@tcp(" + os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT") + ")/" + os.Getenv("DB_DATABASE") + "?charset=utf8mb4&parseTime=True&loc=Local"
 
@@ -62,6 +53,8 @@ func migrateProcess(db *gorm.DB) string {
 				errMessage = fmt.Sprintf("Error migrating table %s: %s", tableName, err)
 			}
 			log.Printf("Table %s created\n", tableName)
+			errMessage = "nil"
+		} else {
 			errMessage = "nil"
 		}
 	}

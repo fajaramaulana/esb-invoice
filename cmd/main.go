@@ -2,6 +2,10 @@ package main
 
 import (
 	"esb-invoice/internal/app/config/db"
+	"esb-invoice/internal/app/controller"
+	"esb-invoice/internal/app/router"
+	"esb-invoice/internal/domain/repository/gorm"
+	"esb-invoice/internal/domain/service"
 	"esb-invoice/seeders"
 	"log"
 	"os"
@@ -41,4 +45,17 @@ func main() {
 		log.Fatal("Error Seeding DB:", err)
 	}
 
+	// repository
+	customerRepository := gorm.NewCustomerRepository(dbInstance)
+
+	// service
+	customerService := service.NewCustomerService(customerRepository)
+
+	// controller
+	customerController := controller.NewCustomerController(customerService)
+
+	// router
+	app := router.NewRouter(customerController)
+
+	app.SetupRouter(os.Getenv("PORT"))
 }
