@@ -48,7 +48,7 @@ func ExtractFieldNameFromError(errorMessage string) (fieldErrorsReturn map[strin
 	} else {
 		fmt.Printf("%# v\n", errorMessage)
 		// Define a regular expression pattern to match the field name in the error message
-		patternErrJsonUnMarshal := `cannot unmarshal string into Go struct field (\S+) of type (\S+)`
+		patternErrJsonUnMarshal := `cannot unmarshal (\S|\s)+ into Go struct field (\S+) of type (\S+)`
 		// get value from regexPatternJsonUnmarshallErr
 		re := regexp.MustCompile(patternErrJsonUnMarshal)
 
@@ -56,13 +56,13 @@ func ExtractFieldNameFromError(errorMessage string) (fieldErrorsReturn map[strin
 		matches := re.FindStringSubmatch(errorMessage)
 		fmt.Printf("%# v\n", matches)
 		if len(matches) > 0 {
-			fieldName := matches[1]
+			fieldName := matches[2]
 
 			// Split the field name by dots and get the last part
 			parts := strings.Split(fieldName, ".")
 			fieldName = parts[len(parts)-1]
 
-			fieldType := matches[2]
+			fieldType := matches[3]
 
 			// Combine the key and field name to form a unique identifier
 			fieldErrors[fieldName] = fmt.Sprintf("%s is not valid, must %s type", fieldName, fieldType)
@@ -77,7 +77,9 @@ func ExtractFieldNameFromError(errorMessage string) (fieldErrorsReturn map[strin
 func GlobalCheckingErrorBindJson(errMessage string) (message string, returnError map[string]string) {
 	if errMessage == "EOF" {
 		message := "Request body is empty"
-		return message, nil
+		return message, map[string]string{
+			"error": errMessage,
+		}
 	}
 	returnDataErrorCheck, isExistError := ExtractFieldNameFromError(errMessage)
 	fmt.Printf("%# v\n", isExistError)
