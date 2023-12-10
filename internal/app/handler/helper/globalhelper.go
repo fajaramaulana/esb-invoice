@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 func ConvertStringToInt(str string) (int, error) {
@@ -92,4 +94,20 @@ func GlobalCheckingErrorBindJson(errMessage string) (message string, returnError
 		}
 		return errMessage, mapReturn
 	}
+}
+
+func PaginationHelper(ctx *gin.Context) (page int, pageSize int, err error) {
+	pageQuery := ctx.DefaultQuery("page", "1")
+	pageSizeQuery := ctx.DefaultQuery("page_size", "10")
+
+	page, err = ConvertStringToInt(pageQuery)
+	if err != nil {
+		return 0, 0, err
+	}
+	pageSize, err = ConvertStringToInt(pageSizeQuery)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return page, pageSize, nil
 }
