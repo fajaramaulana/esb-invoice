@@ -11,6 +11,8 @@ type TypeRepo interface {
 	FindById(id int) (*model.Type, error)
 	UpdateById(id int, update *model.Type) (*model.Type, error)
 	SoftDelete(id int) error
+	FindByName(name string) (*model.Type, error)
+	FindByNameAndNotId(name string, id int) (*model.Type, error)
 }
 
 type ItemRepo interface {
@@ -28,6 +30,7 @@ type CustomerRepo interface {
 	UpdateById(id int, update *model.Customer) (*model.Customer, error)
 	SoftDelete(id int) error
 	FindByEmail(email string) (*model.Customer, error)
+	FindByEmailAndNotId(email string, id int) (*model.Customer, error)
 	CountAll() (int64, error)
 }
 

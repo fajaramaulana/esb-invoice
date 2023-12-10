@@ -11,12 +11,14 @@ import (
 type router struct {
 	router   *gin.Engine
 	customer *controller.CustomerController
+	typeItem *controller.TypeController
 }
 
-func NewRouter(customer *controller.CustomerController) *router {
+func NewRouter(customer *controller.CustomerController, typeItem *controller.TypeController) *router {
 	return &router{
 		router:   gin.Default(),
 		customer: customer,
+		typeItem: typeItem,
 	}
 }
 
@@ -37,6 +39,12 @@ func (r *router) SetupRouter(port string) {
 	v1.DELETE("/customer/:id", r.customer.DeleteCustomer)
 	v1.GET("/customer/:id", r.customer.FindCustomerById)
 	v1.GET("/customer", r.customer.FindAllCustomer)
+
+	// Type
+	v1.GET("/type", r.typeItem.FindAll)
+	v1.POST("/type", r.typeItem.Create)
+	v1.PUT("/type/:id", r.typeItem.Update)
+	v1.DELETE("/type/:id", r.typeItem.Delete)
 
 	r.router.GET("/swaggerr/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	r.router.Run(port)

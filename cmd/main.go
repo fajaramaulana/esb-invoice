@@ -28,7 +28,7 @@ func main() {
 	// Load environment variables
 	checkGoEnv := os.Getenv("GO_ENV")
 	if checkGoEnv == "" { // if GO_ENV is empty, set to development
-		if err := godotenv.Load("../.env"); err != nil {
+		if err := godotenv.Load(); err != nil {
 			log.Fatal("Error loading .env file:", err)
 		}
 	}
@@ -47,15 +47,18 @@ func main() {
 
 	// repository
 	customerRepository := gorm.NewCustomerRepository(dbInstance)
+	typeItemRepository := gorm.NewTypeRepository(dbInstance)
 
 	// service
 	customerService := service.NewCustomerService(customerRepository)
+	typeItemService := service.NewTypeService(typeItemRepository)
 
 	// controller
 	customerController := controller.NewCustomerController(customerService)
+	typeItemController := controller.NewTypeController(typeItemService)
 
 	// router
-	app := router.NewRouter(customerController)
+	app := router.NewRouter(customerController, typeItemController)
 
 	app.SetupRouter(os.Getenv("PORT"))
 }
