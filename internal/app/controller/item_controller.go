@@ -75,6 +75,9 @@ func (c *ItemController) CreateItem(ctx *gin.Context) {
 // @Description Get All Item
 // @Tags Item
 // @Produce  json
+// @Param page query int false "Page"
+// @Param page_size query int false "Page Size"
+// @Param name query string false "Name"
 // @Success 200 {object} response.ResponsePagination
 // @Failure 500 {object} response.ReturnResponseError
 // @Router api/v1/item [get]
