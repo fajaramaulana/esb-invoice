@@ -4,12 +4,14 @@ import (
 	"esb-invoice/internal/app/handler/filters"
 	"esb-invoice/internal/app/handler/helper"
 	"esb-invoice/internal/app/handler/request"
+	"esb-invoice/internal/app/handler/response"
 	"esb-invoice/internal/domain/service"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/niemeyer/pretty"
 )
 
 type InvoiceController struct {
@@ -165,3 +167,80 @@ func (c *InvoiceController) FindAllInvoice(ctx *gin.Context) {
 
 	helper.ReturnJSONWithMeta(ctx, http.StatusOK, returnMessage, invoices, int(totalData), int(totalRecords), page, pageSize)
 }
+
+// UpdateInvoice godoc
+// @Summary Update invoice
+// @Description Update invoice
+// @Tags invoice
+// @Accept  json
+// @Produce  json
+// @Param id path int true "Invoice ID"
+// @Param invoice body request.UpdateInvoiceRequest
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.ResponseError
+// @Failure 500 {object} response.Response
+// @Router /api/v1/invoice/{id} [put]
+func (c *InvoiceController) UpdateInvoice(ctx *gin.Context) {
+	id := ctx.Param("id")
+	intId, err := helper.ConvertStringToInt(id)
+	if err != nil {
+		log.Println("Error:", err)
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, err.Error(), nil, map[string]interface{}{"error": err.Error()})
+		return
+	}
+
+	var req request.UpdateInvoiceRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		message, data := helper.GlobalCheckingErrorBindJson(err.Error())
+		log.Println(fmt.Sprintf("Error: %s", message))
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, message, nil, data)
+		return
+	}
+
+	res := helper.DoValidation(req)
+
+	if len(res) > 0 {
+		log.Println(fmt.Sprintf("Error: %s", "Validation error"))
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, "Validation error", nil, res)
+		return
+	}
+
+	invoice, err := c.invoiceService.Update(intId, &req)
+	fmt.Printf("%# v\n", pretty.Formatter(invoice))
+	if err != nil {
+		log.Println(fmt.Sprintf("Error: %s", err.Error()))
+		helper.ReturnJSONError(ctx, http.StatusInternalServerError, err.Error(), nil, nil)
+		return
+	}
+
+	helper.ReturnJSON(ctx, http.StatusOK, "Invoice updated", response.UpdateInvoiceResponse{Id: int(invoice.InvoiceId)})
+}
+
+// // soft delete invoice
+// // @Summary Soft delete invoice
+// // @Description Soft delete invoice
+// // @Tags invoice
+// // @Produce  json
+// // @Param id path int true "Invoice ID"
+// // @Success 200 {object} response.Response
+// // @Failure 400 {object} response.ResponseError
+// // @Failure 500 {object} response.Response
+// // @Router /api/v1/invoice/{id} [delete]
+// func (c *InvoiceController) DeleteInvoice(ctx *gin.Context) {
+// 	id := ctx.Param("id")
+// 	intId, err := helper.ConvertStringToInt(id)
+// 	if err != nil {
+// 		log.Println("Error:", err)
+// 		helper.ReturnJSONError(ctx, http.StatusBadRequest, err.Error(), nil, map[string]interface{}{"error": err.Error()})
+// 		return
+// 	}
+
+// 	err = c.invoiceService.SoftDelete(intId)
+// 	if err != nil {
+// 		log.Println(fmt.Sprintf("Error: %s", err.Error()))
+// 		helper.ReturnJSONError(ctx, http.StatusInternalServerError, err.Error(), nil, nil)
+// 		return
+// 	}
+
+// 	helper.ReturnJSON(ctx, http.StatusOK, "Invoice deleted", nil)
+// }

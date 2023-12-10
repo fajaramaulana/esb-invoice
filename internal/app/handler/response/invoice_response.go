@@ -45,3 +45,7 @@ type CustomerInsideInvoice struct {
 	Email   string `json:"email"`
 	Address string `json:"address"`
 }
+
+type UpdateInvoiceResponse struct {
+	Id int `json:"id"`
+}

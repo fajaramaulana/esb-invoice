@@ -116,30 +116,29 @@ func (r *invoiceRepo) SoftDelete(id int) error {
 }
 
 // UpdateById implements repositories.InvoiceRepo.
-func (r *invoiceRepo) UpdateById(id int, update *model.Invoice) (*model.Invoice, error) {
+func (r *invoiceRepo) UpdateById(tx *gorm.DB, id int, update *model.Invoice) (*model.Invoice, error) {
 	var existingInvoice model.Invoice
 
-	// Find the existing invoice by ID
-	result := r.db.First(&existingInvoice, id)
+	result := tx.First(&existingInvoice, id)
+
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	// update fields
+	// update invoice
 	existingInvoice.Subject = update.Subject
 	existingInvoice.IssueDate = update.IssueDate
 	existingInvoice.DueDate = update.DueDate
 	existingInvoice.CustomerID = update.CustomerID
-	existingInvoice.PaymentStatus = update.PaymentStatus
 	existingInvoice.TotalItem = update.TotalItem
 	existingInvoice.Subtotal = update.Subtotal
 	existingInvoice.TaxRate = update.TaxRate
 	existingInvoice.TaxAmount = update.TaxAmount
 	existingInvoice.TotalAmount = update.TotalAmount
-	existingInvoice.UpdatedAt = update.UpdatedAt
+	existingInvoice.PaymentStatus = update.PaymentStatus
+	existingInvoice.UpdatedAt = time.Now()
 
-	// save the changes
-	result = r.db.Save(&existingInvoice)
+	result = tx.Save(&existingInvoice)
 
 	if result.Error != nil {
 		return nil, result.Error

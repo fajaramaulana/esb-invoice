@@ -43,7 +43,7 @@ type InvoiceRepo interface {
 	Create(tx *gorm.DB, invoice *model.Invoice) (int, error)
 	FindById(id int) (*model.Invoice, error)
 	FindAll(filter filters.InvoiceFilter, page int, pageSize int) ([]model.Invoice, int64, error)
-	UpdateById(id int, update *model.Invoice) (*model.Invoice, error)
+	UpdateById(tx *gorm.DB, id int, update *model.Invoice) (*model.Invoice, error)
 	UpdateStatusPaid(id int, paymentStatus int) (*model.Invoice, error)
 	SoftDelete(id int) error
 	CountAll() (int64, error)
@@ -53,6 +53,6 @@ type InvoiceItemRepo interface {
 	Create(tx *gorm.DB, invoiceItem *[]model.InvoiceItem) ([]int, error)
 	FindById(id int) (*model.InvoiceItem, error)
 	FindByInvoiceId(idInvoice int) ([]model.InvoiceItem, error)
-	UpdateById(id int, update *model.InvoiceItem) (*model.InvoiceItem, error)
-	SoftDelete(id int) error
+	UpdateById(tx *gorm.DB, id int, update *model.InvoiceItem) (*model.InvoiceItem, error)
+	SoftDelete(tx *gorm.DB, id int) error
 }

@@ -45,8 +45,9 @@ func (r *invoiceitemRepo) FindByInvoiceId(idInvoice int) ([]model.InvoiceItem, e
 }
 
 // SoftDelete implements repositories.InvoiceItemRepo.
-func (r *invoiceitemRepo) SoftDelete(id int) error {
-	result := r.db.Delete(&model.InvoiceItem{}, id)
+func (r *invoiceitemRepo) SoftDelete(tx *gorm.DB, id int) error {
+	// soft delete invoice item by id
+	result := tx.Delete(&model.InvoiceItem{}, id)
 
 	if result.Error != nil {
 		return result.Error
@@ -60,24 +61,24 @@ func (r *invoiceitemRepo) SoftDelete(id int) error {
 }
 
 // UpdateById implements repositories.InvoiceItemRepo.
-func (r *invoiceitemRepo) UpdateById(id int, update *model.InvoiceItem) (*model.InvoiceItem, error) {
-	// find invoice item by id
+func (r *invoiceitemRepo) UpdateById(tx *gorm.DB, id int, update *model.InvoiceItem) (*model.InvoiceItem, error) {
+	// update invoice item by id
 	var existingInvoiceItem model.InvoiceItem
-	result := r.db.First(&existingInvoiceItem, id)
+
+	result := tx.First(&existingInvoiceItem, id)
+
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	// update fields
-	existingInvoiceItem.InvoiceID = update.InvoiceID
+	// update invoice item
 	existingInvoiceItem.ItemID = update.ItemID
 	existingInvoiceItem.Quantity = update.Quantity
 	existingInvoiceItem.UnitPrice = update.UnitPrice
 	existingInvoiceItem.TotalPrice = update.TotalPrice
 	existingInvoiceItem.UpdatedAt = update.UpdatedAt
 
-	// save the changes
-	result = r.db.Save(&existingInvoiceItem)
+	result = tx.Save(&existingInvoiceItem)
 
 	if result.Error != nil {
 		return nil, result.Error
