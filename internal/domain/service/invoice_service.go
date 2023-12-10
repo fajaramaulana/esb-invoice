@@ -1,6 +1,7 @@
 package service
 
 import (
+	"esb-invoice/internal/app/handler/filters"
 	"esb-invoice/internal/app/handler/request"
 	"esb-invoice/internal/app/handler/response"
 	"esb-invoice/internal/domain/model"
@@ -75,7 +76,7 @@ func (s *InvoiceService) Create(req *request.CreateInvoiceRequest) (int, error) 
 
 	// count purpose for total item
 
-	var totalItem int
+	var totalItem float64
 	var subTotal float64
 	// count totalPrice per item
 
@@ -109,8 +110,6 @@ func (s *InvoiceService) Create(req *request.CreateInvoiceRequest) (int, error) 
 		tx.Rollback()
 		return 0, err
 	}
-
-	fmt.Printf("%# v\n", req.InvoiceItems)
 
 	for _, item := range req.InvoiceItems {
 		// check item id
@@ -158,9 +157,17 @@ func (s *InvoiceService) Create(req *request.CreateInvoiceRequest) (int, error) 
 }
 
 func (s *InvoiceService) GetInvoice(id int) (*response.InvoiceResponse, error) {
-	invoice, err := s.invoiceRepo.FindById(id)
 	var responseInvoice response.InvoiceResponse
 	var ItemInsideInvoice []response.ItemInsideInvoice
+
+	invoice, err := s.invoiceRepo.FindById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if invoice == nil {
+		return nil, fmt.Errorf("invoice id %d not found", id)
+	}
 
 	for _, v := range invoice.InvoiceItem {
 		ItemInsideInvoice = append(ItemInsideInvoice, response.ItemInsideInvoice{
@@ -176,19 +183,11 @@ func (s *InvoiceService) GetInvoice(id int) (*response.InvoiceResponse, error) {
 				Price:  v.Item.Price,
 				TypeID: v.Item.TypeID,
 				Type: response.TypeInsideInvoice{
-					ID:   v.Item.Type.ID,
+					ID:   uint(v.Item.Type.ID),
 					Name: v.Item.Type.Name,
 				},
 			},
 		})
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	if invoice == nil {
-		return nil, fmt.Errorf("invoice id %d not found", id)
 	}
 
 	responseInvoice = response.InvoiceResponse{
@@ -205,7 +204,7 @@ func (s *InvoiceService) GetInvoice(id int) (*response.InvoiceResponse, error) {
 		TotalAmount:   invoice.TotalAmount,
 		InvoiceItem:   ItemInsideInvoice,
 		Customer: response.CustomerInsideInvoice{
-			ID:      invoice.Customer.ID,
+			ID:      uint(invoice.Customer.ID),
 			Name:    invoice.Customer.Name,
 			Email:   invoice.Customer.Email,
 			Address: invoice.Customer.Address,
@@ -213,4 +212,89 @@ func (s *InvoiceService) GetInvoice(id int) (*response.InvoiceResponse, error) {
 	}
 
 	return &responseInvoice, nil
+}
+
+func (s *InvoiceService) FindAll(filter *filters.InvoiceFilter, page int, pageSize int) ([]*response.InvoiceResponse, int64, error) {
+	var responseInvoice []response.InvoiceResponse
+	var ItemInsideInvoice []response.ItemInsideInvoice
+
+	if filter.IssueDate != "" {
+		_, err := time.Parse("02/01/2006", filter.IssueDate)
+		if err != nil {
+			filter.IssueDate = "01/01/1970"
+		}
+	}
+
+	if filter.DueDate != "" {
+		_, err := time.Parse("02/01/2006", filter.DueDate)
+		if err != nil {
+			filter.DueDate = "01/01/1970"
+		}
+	}
+
+	invoices, total, err := s.invoiceRepo.FindAll(*filter, page, pageSize)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	for _, invoice := range invoices {
+		for _, v := range invoice.InvoiceItem {
+			ItemInsideInvoice = append(ItemInsideInvoice, response.ItemInsideInvoice{
+				ID:         v.ID,
+				InvoiceID:  v.InvoiceID,
+				ItemID:     v.ItemID,
+				Quantity:   v.Quantity,
+				UnitPrice:  v.UnitPrice,
+				TotalPrice: v.TotalPrice,
+				Item: response.DetailItemInsideInvoice{
+					ID:     v.Item.ID,
+					Name:   v.Item.Name,
+					Price:  v.Item.Price,
+					TypeID: v.Item.TypeID,
+					Type: response.TypeInsideInvoice{
+						ID:   uint(v.Item.Type.ID),
+						Name: v.Item.Type.Name,
+					},
+				},
+			})
+		}
+
+		responseInvoice = append(responseInvoice, response.InvoiceResponse{
+			InvoiceId:     invoice.InvoiceID,
+			Subject:       invoice.Subject,
+			IssueDate:     invoice.IssueDate.Format("02/01/2006"),
+			DueDate:       invoice.DueDate.Format("02/01/2006"),
+			CustomerId:    invoice.CustomerID,
+			PaymentStatus: invoice.PaymentStatus,
+			TotalItem:     invoice.TotalItem,
+			Subtotal:      invoice.Subtotal,
+			TaxRate:       invoice.TaxRate,
+			TaxAmount:     invoice.TaxAmount,
+			TotalAmount:   invoice.TotalAmount,
+			InvoiceItem:   ItemInsideInvoice,
+			Customer: response.CustomerInsideInvoice{
+				ID:      uint(invoice.Customer.ID),
+				Name:    invoice.Customer.Name,
+				Email:   invoice.Customer.Email,
+				Address: invoice.Customer.Address,
+			},
+		})
+	}
+
+	var responseInvoicePtr []*response.InvoiceResponse
+	for _, invoice := range responseInvoice {
+		responseInvoicePtr = append(responseInvoicePtr, &invoice)
+	}
+	return responseInvoicePtr, total, nil
+}
+
+func (s *InvoiceService) CountAll() (int64, error) {
+	totalRecords, err := s.invoiceRepo.CountAll()
+
+	if err != nil {
+		return 0, err
+	}
+
+	return totalRecords, nil
 }

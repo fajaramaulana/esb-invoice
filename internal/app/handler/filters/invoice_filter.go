@@ -1,14 +1,13 @@
 package filters
 
 type InvoiceFilter struct {
-	InvoiceID  uint   `json:"invoiceID"`
-	IssueDate  string `json:"issueDate"`
-	DueDate    string `json:"dueDate"`
-	Subject    string `json:"subject"`
-	TotalItems int    `json:"totalItems"`
-	CustomerID uint   `json:"customerID"`
-	UserID     uint   `json:"userID"`
-	Status     string `json:"status"`
+	InvoiceID     string `form:"invoice_id" validate:"omitempty"`
+	IssueDate     string `form:"issue_date" validate:"omitempty"`
+	DueDate       string `form:"due_date" validate:"omitempty"`
+	Subject       string `form:"subject" validate:"omitempty"`
+	TotalItem     string `form:"total_item" validate:"omitempty"`
+	CustomerName  string `form:"customer_name" validate:"omitempty"`
+	PaymentStatus int    `form:"payment_status" validate:"omitempty"`
 }
 
 func NewInvoiceFilter() *InvoiceFilter {

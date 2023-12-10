@@ -46,6 +46,7 @@ type InvoiceRepo interface {
 	UpdateById(id int, update *model.Invoice) (*model.Invoice, error)
 	UpdateStatusPaid(id int, paymentStatus int) (*model.Invoice, error)
 	SoftDelete(id int) error
+	CountAll() (int64, error)
 }
 
 type InvoiceItemRepo interface {

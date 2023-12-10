@@ -4,6 +4,8 @@ import (
 	"esb-invoice/internal/app/handler/filters"
 	"esb-invoice/internal/domain/model"
 	"esb-invoice/internal/domain/repository"
+	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -33,53 +35,58 @@ func (r *invoiceRepo) FindAll(filter filters.InvoiceFilter, page int, pageSize i
 	var invoices []model.Invoice
 	var totalRecords int64
 
-	query := r.db.Model(&model.Invoice{})
+	query := r.db.Model(&model.Invoice{}).Preload("Customer").Preload("InvoiceItem").Preload("InvoiceItem.Item").Preload("InvoiceItem.Item.Type").Order("invoice_id DESC")
 
 	if query.Error != nil {
 		return nil, 0, query.Error
 	}
 
 	// Apply filters based on the InvoiceFilter
-	if filter.InvoiceID != 0 {
+	if filter.InvoiceID != "" {
 		query = query.Where("invoice_id = ?", filter.InvoiceID)
 	}
 
 	if filter.IssueDate != "" {
-		query = query.Where("issue_date = ?", filter.IssueDate)
+		issueDate, err := time.Parse("02/01/2006", filter.IssueDate)
+		if err != nil {
+			return nil, 0, fmt.Errorf("error parse issue date: %s", err.Error())
+		}
+		query = query.Where("issue_date = ?", issueDate)
 	}
 
 	if filter.DueDate != "" {
-		query = query.Where("due_date = ?", filter.DueDate)
+		dueDate, err := time.Parse("02/01/2006", filter.DueDate)
+		if err != nil {
+			return nil, 0, fmt.Errorf("error parse due date: %s", err.Error())
+		}
+		query = query.Where("due_date = ?", dueDate)
 	}
 
 	if filter.Subject != "" {
-		query = query.Where("subject = ?", filter.Subject)
+		// where like
+		query = query.Where("subject LIKE ?", "%"+filter.Subject+"%")
 	}
 
-	if filter.TotalItems != 0 {
-		query = query.Where("total_items = ?", filter.TotalItems)
+	if filter.TotalItem != "" {
+		query = query.Where("total_item = ?", filter.TotalItem)
 	}
 
-	if filter.CustomerID != 0 {
-		query = query.Where("customer_id = ?", filter.CustomerID)
+	if filter.CustomerName != "" {
+		query = query.Joins("JOIN customers ON invoices.customer_id = customers.id").Where("customers.name LIKE ?", "%"+filter.CustomerName+"%")
 	}
 
-	if filter.UserID != 0 {
-		query = query.Where("user_id = ?", filter.UserID)
-	}
-
-	if filter.Status != "" {
-		query = query.Where("status = ?", filter.Status)
+	if filter.PaymentStatus != 0 {
+		query = query.Where("payment_status = ?", filter.PaymentStatus)
 	}
 
 	// Pagination
 	offset := (page - 1) * pageSize
 
-	if err := query.Count(&totalRecords).Error; err != nil {
+	if err := query.Offset(offset).Limit(pageSize).Find(&invoices).Error; err != nil {
 		return nil, 0, err
 	}
 
-	if err := query.Offset(offset).Limit(pageSize).Find(&invoices).Error; err != nil {
+	if err := query.Count(&totalRecords).Error; err != nil {
 		return nil, 0, err
 	}
 
@@ -161,4 +168,13 @@ func (r *invoiceRepo) UpdateStatusPaid(id int, paymentStatus int) (*model.Invoic
 	}
 
 	return &existingInvoice, nil
+}
+
+func (r *invoiceRepo) CountAll() (int64, error) {
+	var totalInvoice int64
+	result := r.db.Model(&model.Invoice{}).Count(&totalInvoice)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+	return totalInvoice, nil
 }

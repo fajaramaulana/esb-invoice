@@ -57,6 +57,7 @@ func (r *router) SetupRouter(port string) {
 	v1.PUT("/item/:id", r.item.UpdateItem)
 	v1.DELETE("/item/:id", r.item.DeleteItem)
 
+	v1.GET("/invoice", r.invoice.FindAllInvoice)
 	v1.GET("/invoice/:id", r.invoice.FindInvoiceById)
 	v1.POST("/invoice", r.invoice.CreateInvoice)
 

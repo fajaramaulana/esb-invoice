@@ -7,7 +7,7 @@ type InvoiceResponse struct {
 	DueDate       string                `json:"due_date"`
 	CustomerId    uint                  `json:"customer_id"`
 	PaymentStatus int                   `json:"payment_status"`
-	TotalItem     int                   `json:"total_item"`
+	TotalItem     float64               `json:"total_item"`
 	Subtotal      float64               `json:"subtotal"`
 	TaxRate       float64               `json:"tax_rate"`
 	TaxAmount     float64               `json:"tax_amount"`
@@ -20,7 +20,7 @@ type ItemInsideInvoice struct {
 	ID         uint                    `json:"id"`
 	InvoiceID  uint                    `json:"invoice_id"`
 	ItemID     uint                    `json:"item_id"`
-	Quantity   int                     `json:"quantity"`
+	Quantity   float64                 `json:"quantity"`
 	UnitPrice  float64                 `json:"unit_price"`
 	TotalPrice float64                 `json:"total_price"`
 	Item       DetailItemInsideInvoice `json:"item"`

@@ -19,7 +19,7 @@ type CreateInvoiceRequest struct {
 type CreateInvoiceItemRequest struct {
 	ProductId   int     `json:"product_id" form:"product_id" binding:"required" validate:"required"`
 	ProductName string  `json:"product_name" form:"product_name" binding:"required" validate:"required"`
-	Quantity    int     `json:"quantity" form:"quantity" binding:"required" validate:"required"`
+	Quantity    float64 `json:"quantity" form:"quantity" binding:"required" validate:"required"`
 	Price       float64 `json:"price" form:"price" binding:"required" validate:"required"`
 	TotalPrice  float64 `json:"total_price" form:"total_price" binding:"required" validate:"required"`
 }
