@@ -52,11 +52,11 @@ func (r *customerRepo) FindAll(filter filters.CustomerFilter, page int, pageSize
 	// Pagination
 	offset := (page - 1) * pageSize
 
-	if err := query.Count(&totalRecords).Error; err != nil {
+	if err := query.Offset(offset).Limit(pageSize).Find(&customers).Error; err != nil {
 		return nil, 0, err
 	}
 
-	if err := query.Offset(offset).Limit(pageSize).Find(&customers).Error; err != nil {
+	if err := query.Count(&totalRecords).Error; err != nil {
 		return nil, 0, err
 	}
 
