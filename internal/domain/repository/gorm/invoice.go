@@ -19,9 +19,13 @@ func NewInvoiceRepository(db *gorm.DB) repository.InvoiceRepo {
 }
 
 // Create implements repositories.InvoiceRepo.
-func (r *invoiceRepo) Create(invoice *model.Invoice) (int, error) {
-	err := r.db.Create(invoice).Error
-	return int(invoice.InvoiceID), err
+func (r *invoiceRepo) Create(tx *gorm.DB, invoice *model.Invoice) (int, error) {
+
+	if err := tx.Create(invoice).Error; err != nil {
+		return 0, err
+	}
+
+	return int(invoice.InvoiceID), nil
 }
 
 // FindAll implements repositories.InvoiceRepo.

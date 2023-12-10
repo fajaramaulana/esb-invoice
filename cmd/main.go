@@ -49,19 +49,23 @@ func main() {
 	customerRepository := gorm.NewCustomerRepository(dbInstance)
 	typeItemRepository := gorm.NewTypeRepository(dbInstance)
 	itemRepository := gorm.NewItemRepository(dbInstance)
+	invoiceRepository := gorm.NewInvoiceRepository(dbInstance)
+	invoiceItemRepository := gorm.NewInvoiceItemRepository(dbInstance)
 
 	// service
 	customerService := service.NewCustomerService(customerRepository)
 	typeItemService := service.NewTypeService(typeItemRepository)
 	itemService := service.NewItemService(itemRepository, typeItemRepository)
+	invoiceService := service.NewInvoiceService(dbInstance, invoiceRepository, invoiceItemRepository, customerRepository, itemRepository)
 
 	// controller
 	customerController := controller.NewCustomerController(customerService)
 	typeItemController := controller.NewTypeController(typeItemService)
 	itemController := controller.NewItemController(itemService)
+	invoiceController := controller.NewInvoiceController(invoiceService)
 
 	// router
-	app := router.NewRouter(customerController, typeItemController, itemController)
+	app := router.NewRouter(customerController, typeItemController, itemController, invoiceController)
 
 	app.SetupRouter(os.Getenv("PORT"))
 }

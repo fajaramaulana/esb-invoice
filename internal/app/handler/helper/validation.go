@@ -18,7 +18,9 @@ func DoValidation(i interface{}) map[string]string {
 
 	val := CustomValidation{validator.New()}
 
+	// add custom validation
 	val.Validator.RegisterValidation("customDate", validateCustomDate)
+
 	if err := val.Validator.Struct(i); err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
 			switch e.Tag() {

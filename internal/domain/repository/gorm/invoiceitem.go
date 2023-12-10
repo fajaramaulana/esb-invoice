@@ -18,18 +18,14 @@ func NewInvoiceItemRepository(db *gorm.DB) repository.InvoiceItemRepo {
 }
 
 // Create implements repositories.InvoiceItemRepo.
-func (r *invoiceitemRepo) Create(invoiceItem *[]model.InvoiceItem) ([]int, error) {
+func (r *invoiceitemRepo) Create(tx *gorm.DB, invoiceItems *[]model.InvoiceItem) ([]int, error) {
 	// input multiple invoice item and return multiple invoice item id
-	var invoiceItemId []int
-	for _, item := range *invoiceItem {
-		err := r.db.Create(item).Error
-		if err != nil {
-			return nil, err
-		}
-		invoiceItemId = append(invoiceItemId, int(item.ID))
-	}
-	return invoiceItemId, nil
 
+	if err := tx.Create(invoiceItems).Error; err != nil {
+		return nil, err
+	}
+
+	return []int{}, nil
 }
 
 // FindById implements repositories.InvoiceItemRepo.

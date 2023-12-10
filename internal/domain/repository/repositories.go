@@ -3,6 +3,8 @@ package repository
 import (
 	"esb-invoice/internal/app/handler/filters"
 	"esb-invoice/internal/domain/model"
+
+	"gorm.io/gorm"
 )
 
 type TypeRepo interface {
@@ -38,7 +40,7 @@ type CustomerRepo interface {
 }
 
 type InvoiceRepo interface {
-	Create(invoice *model.Invoice) (int, error)
+	Create(tx *gorm.DB, invoice *model.Invoice) (int, error)
 	FindById(id int) (*model.Invoice, error)
 	FindAll(filter filters.InvoiceFilter, page int, pageSize int) ([]model.Invoice, int64, error)
 	UpdateById(id int, update *model.Invoice) (*model.Invoice, error)
@@ -47,7 +49,7 @@ type InvoiceRepo interface {
 }
 
 type InvoiceItemRepo interface {
-	Create(invoiceItem *[]model.InvoiceItem) ([]int, error)
+	Create(tx *gorm.DB, invoiceItem *[]model.InvoiceItem) ([]int, error)
 	FindById(id int) (*model.InvoiceItem, error)
 	FindByInvoiceId(idInvoice int) ([]model.InvoiceItem, error)
 	UpdateById(id int, update *model.InvoiceItem) (*model.InvoiceItem, error)
