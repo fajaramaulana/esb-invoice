@@ -27,6 +27,7 @@ type Response struct {
 }
 
 type ReturnResponseError struct {
-	Meta Meta     `json:"meta"`
-	Data struct{} `json:"data"`
+	Meta  Meta        `json:"meta"`
+	Data  interface{} `json:"data"`
+	Error interface{} `json:"error"`
 }

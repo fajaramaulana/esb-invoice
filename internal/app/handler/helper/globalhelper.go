@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 func ConvertStringToInt(str string) (int, error) {
@@ -21,27 +22,72 @@ func MinLengthQueryParam(str string, min int) bool {
 	return false
 }
 
-func ExtractFieldNameFromError(errorMessage string) (fieldErrorsReturn map[string]string) {
+func ExtractFieldNameFromError(errorMessage string) (fieldErrorsReturn map[string]string, boolReturn bool) {
 	fieldErrors := make(map[string]string)
 	// Define a regular expression pattern to match the field name in the error message
 	regexPattern := `Key: '([^']+)' Error:Field validation for '([^']+)' failed on the '([^']+)' tag`
 	regex := regexp.MustCompile(regexPattern)
 
+	boolReturn = false
+
 	// Find all matches in the error message
 	matches := regex.FindAllStringSubmatch(errorMessage, -1)
+	if len(matches) > 0 {
+		for _, match := range matches {
+			fieldName := match[2]
+			errorMessage := match[3]
 
-	// Check if a match is found
+			// Combine the key and field name to form a unique identifier
+			identifier := fmt.Sprintf("%s", fieldName)
 
-	for _, match := range matches {
-		fieldName := match[2]
-		errorMessage := match[3]
+			// Store the error message in the map using the identifier as the key
+			fieldErrors[identifier] = fmt.Sprintf("%s is %s", identifier, errorMessage)
+		}
 
-		// Combine the key and field name to form a unique identifier
-		identifier := fmt.Sprintf("%s", fieldName)
+		return fieldErrors, true
+	} else {
+		fmt.Printf("%# v\n", errorMessage)
+		// Define a regular expression pattern to match the field name in the error message
+		patternErrJsonUnMarshal := `cannot unmarshal string into Go struct field (\S+) of type (\S+)`
+		// get value from regexPatternJsonUnmarshallErr
+		re := regexp.MustCompile(patternErrJsonUnMarshal)
 
-		// Store the error message in the map using the identifier as the key
-		fieldErrors[identifier] = fmt.Sprintf("%s is %s", identifier, errorMessage)
+		// Find matches in the error message
+		matches := re.FindStringSubmatch(errorMessage)
+		fmt.Printf("%# v\n", matches)
+		if len(matches) > 0 {
+			fieldName := matches[1]
+
+			// Split the field name by dots and get the last part
+			parts := strings.Split(fieldName, ".")
+			fieldName = parts[len(parts)-1]
+
+			fieldType := matches[2]
+
+			// Combine the key and field name to form a unique identifier
+			fieldErrors[fieldName] = fmt.Sprintf("%s is not valid, must %s type", fieldName, fieldType)
+
+			return fieldErrors, true
+		}
 	}
 
-	return fieldErrors
+	return fieldErrors, boolReturn
+}
+
+func GlobalCheckingErrorBindJson(errMessage string) (message string, returnError map[string]string) {
+	if errMessage == "EOF" {
+		message := "Request body is empty"
+		return message, nil
+	}
+	returnDataErrorCheck, isExistError := ExtractFieldNameFromError(errMessage)
+	fmt.Printf("%# v\n", isExistError)
+	if isExistError {
+		message := "Validation error"
+		return message, returnDataErrorCheck
+	} else {
+		mapReturn := map[string]string{
+			"error": errMessage,
+		}
+		return errMessage, mapReturn
+	}
 }

@@ -11,6 +11,12 @@ type Response struct {
 	Data interface{} `json:"data"`
 }
 
+type ResponseError struct {
+	Meta  Meta        `json:"meta"`
+	Data  interface{} `json:"data"`
+	Error interface{} `json:"error"`
+}
+
 type ResponsePagination struct {
 	Meta MetaPagination `json:"meta"`
 	Data interface{}    `json:"data"`
@@ -42,6 +48,22 @@ func ReturnJSON(ctx *gin.Context, code int, message string, data interface{}) {
 	response := Response{
 		Meta: meta,
 		Data: data,
+	}
+
+	ctx.JSON(code, response)
+}
+
+func ReturnJSONError(ctx *gin.Context, code int, message string, data interface{}, err interface{}) {
+	meta := Meta{
+		Code:    code,
+		Status:  http.StatusText(code),
+		Message: message,
+	}
+
+	response := ResponseError{
+		Meta:  meta,
+		Data:  data,
+		Error: err,
 	}
 
 	ctx.JSON(code, response)
