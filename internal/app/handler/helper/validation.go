@@ -2,8 +2,9 @@ package helper
 
 import (
 	"fmt"
+	"time"
 
-	"github.com/go-playground/validator"
+	"github.com/go-playground/validator/v10"
 )
 
 type CustomValidation struct {
@@ -17,6 +18,7 @@ func DoValidation(i interface{}) map[string]string {
 
 	val := CustomValidation{validator.New()}
 
+	val.Validator.RegisterValidation("customDate", validateCustomDate)
 	if err := val.Validator.Struct(i); err != nil {
 		for _, e := range err.(validator.ValidationErrors) {
 			switch e.Tag() {
@@ -80,6 +82,8 @@ func DoValidation(i interface{}) map[string]string {
 				message[e.Field()] = fmt.Sprintf("%s must start with %s", e.Field(), e.Param())
 			case "endswith":
 				message[e.Field()] = fmt.Sprintf("%s must end with %s", e.Field(), e.Param())
+			case "customDate":
+				message[e.Field()] = fmt.Sprintf("%s must be in format dd/mm/yyyy", e.Field())
 			}
 
 		}
@@ -88,4 +92,10 @@ func DoValidation(i interface{}) map[string]string {
 	}
 
 	return nil
+}
+
+func validateCustomDate(fl validator.FieldLevel) bool {
+	dateStr := fl.Field().String()
+	_, err := time.Parse("02/01/2006", dateStr)
+	return err == nil
 }
