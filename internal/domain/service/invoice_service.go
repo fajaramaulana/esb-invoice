@@ -72,16 +72,33 @@ func (s *InvoiceService) Create(req *request.CreateInvoiceRequest) (int, error) 
 		return 0, fmt.Errorf("error parse due date: %s", err.Error())
 	}
 
+	// count purpose for total item
+
+	var totalItem int
+	var subTotal float64
+	// count totalPrice per item
+
+	for _, item := range req.InvoiceItems {
+		totalItem += item.Quantity
+		subTotal += float64(item.Quantity) * item.Price
+	}
+
+	// calculate tax amount
+	taxAmount := (req.Tax / 100) * subTotal
+
+	// calculate total amount
+	totalAmount := subTotal + taxAmount
+
 	invoice.Subject = req.Subject
 	invoice.IssueDate = reqIssueDate
 	invoice.DueDate = reqDueDate
 	invoice.CustomerID = uint(req.CustomerId)
 	invoice.PaymentStatus = 0
-	invoice.TotalItem = req.TotalItem
-	invoice.Subtotal = req.SubTotal
+	invoice.TotalItem = totalItem
+	invoice.Subtotal = subTotal
 	invoice.TaxRate = req.Tax
-	invoice.TaxAmount = req.TaxAmount
-	invoice.TotalAmount = req.TotalAmount
+	invoice.TaxAmount = taxAmount
+	invoice.TotalAmount = totalAmount
 	invoice.CreatedAt = time.Now()
 	invoice.UpdatedAt = time.Time{}
 
@@ -115,7 +132,7 @@ func (s *InvoiceService) Create(req *request.CreateInvoiceRequest) (int, error) 
 		invoiceItem.ItemID = uint(item.ProductId)
 		invoiceItem.Quantity = item.Quantity
 		invoiceItem.UnitPrice = item.Price
-		invoiceItem.TotalPrice = item.TotalPrice
+		invoiceItem.TotalPrice = float64(item.Quantity) * item.Price
 		invoiceItem.CreatedAt = time.Now()
 		invoiceItem.UpdatedAt = time.Time{}
 
