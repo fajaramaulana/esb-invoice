@@ -39,15 +39,9 @@ func (c *CustomerController) CreateCustomer(ctx *gin.Context) {
 
 	// Bind request body to struct
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		fmt.Printf("%# v\n", err.Error())
-		if err.Error() == "EOF" {
-			log.Println("Error: Request body is empty")
-			helper.ReturnJSON(ctx, http.StatusBadRequest, "Request body is empty", nil)
-			return
-		}
-		returnDataErrorCheck := helper.ExtractFieldNameFromError(err.Error())
-		log.Println("Error: Validation error")
-		helper.ReturnJSON(ctx, http.StatusBadRequest, "Validation error", returnDataErrorCheck)
+		message, data := helper.GlobalCheckingErrorBindJson(err.Error())
+		log.Println(fmt.Sprintf("Error: %s", message))
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, message, nil, data)
 		return
 	}
 
@@ -55,7 +49,7 @@ func (c *CustomerController) CreateCustomer(ctx *gin.Context) {
 
 	if len(res) > 0 {
 		log.Println("Error: Validation error")
-		helper.ReturnJSON(ctx, http.StatusBadRequest, "Validation error", res)
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, "Validation error", nil, res)
 		return
 	}
 
@@ -64,14 +58,14 @@ func (c *CustomerController) CreateCustomer(ctx *gin.Context) {
 	if err != nil {
 		if err.Error() != "record not found" {
 			log.Println("Error:", err)
-			helper.ReturnJSON(ctx, http.StatusInternalServerError, err.Error(), nil)
+			helper.ReturnJSONError(ctx, http.StatusInternalServerError, err.Error(), nil, map[string]interface{}{"error": err.Error()})
 			return
 		}
 	}
 
 	if checkByEmail != nil {
 		log.Println("Error: Email already exist")
-		helper.ReturnJSON(ctx, http.StatusBadRequest, "Email already exist", nil)
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, "Email already exist", nil, map[string]interface{}{"error": "Email already exist"})
 		return
 	}
 
@@ -79,7 +73,7 @@ func (c *CustomerController) CreateCustomer(ctx *gin.Context) {
 
 	if err != nil {
 		log.Println("Error:", err)
-		helper.ReturnJSON(ctx, http.StatusInternalServerError, err.Error(), nil)
+		helper.ReturnJSONError(ctx, http.StatusInternalServerError, err.Error(), nil, map[string]interface{}{"error": err.Error()})
 		return
 	}
 
@@ -105,21 +99,15 @@ func (c *CustomerController) UpdateCustomer(ctx *gin.Context) {
 	intId, err := helper.ConvertStringToInt(id)
 	if err != nil {
 		log.Println("Error:", err)
-		helper.ReturnJSON(ctx, http.StatusBadRequest, err.Error(), nil)
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, err.Error(), nil, map[string]interface{}{"error": err.Error()})
 		return
 	}
 
 	// Bind request body to struct
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		fmt.Printf("%# v\n", err.Error())
-		if err.Error() == "EOF" {
-			log.Println("Error: Request body is empty")
-			helper.ReturnJSON(ctx, http.StatusBadRequest, "Request body is empty", nil)
-			return
-		}
-		returnDataErrorCheck := helper.ExtractFieldNameFromError(err.Error())
-		log.Println("Error: Validation error")
-		helper.ReturnJSON(ctx, http.StatusBadRequest, "Validation error", returnDataErrorCheck)
+		message, data := helper.GlobalCheckingErrorBindJson(err.Error())
+		log.Println(fmt.Sprintf("Error: %s", message))
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, message, nil, data)
 		return
 	}
 
@@ -127,7 +115,7 @@ func (c *CustomerController) UpdateCustomer(ctx *gin.Context) {
 
 	if len(res) > 0 {
 		log.Println("Error: Validation error")
-		helper.ReturnJSON(ctx, http.StatusBadRequest, "Validation error", res)
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, "Validation error", nil, res)
 		return
 	}
 
@@ -138,7 +126,7 @@ func (c *CustomerController) UpdateCustomer(ctx *gin.Context) {
 			fmt.Printf("%# v\n", err.Error())
 			log.Println("Error:", err)
 			if err.Error() == "record not found" {
-				helper.ReturnJSON(ctx, http.StatusNotFound, "Customer not found", nil)
+				helper.ReturnJSONError(ctx, http.StatusNotFound, "Customer not found", nil, map[string]interface{}{"error": "Customer not found"})
 				return
 			}
 		}
@@ -146,7 +134,7 @@ func (c *CustomerController) UpdateCustomer(ctx *gin.Context) {
 
 	if checkByEmail != nil {
 		log.Println("Error: Email already exist")
-		helper.ReturnJSON(ctx, http.StatusBadRequest, "Email already exist", nil)
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, "Email already exist", nil, map[string]interface{}{"error": "Email already exist"})
 		return
 	}
 
@@ -155,10 +143,10 @@ func (c *CustomerController) UpdateCustomer(ctx *gin.Context) {
 	if err != nil {
 		log.Println("Error:", err)
 		if err.Error() == "record not found" {
-			helper.ReturnJSON(ctx, http.StatusNotFound, "Customer not found", nil)
+			helper.ReturnJSONError(ctx, http.StatusNotFound, "Customer not found", nil, map[string]interface{}{"error": "Customer not found"})
 			return
 		}
-		helper.ReturnJSON(ctx, http.StatusInternalServerError, err.Error(), nil)
+		helper.ReturnJSONError(ctx, http.StatusInternalServerError, err.Error(), nil, map[string]interface{}{"error": err.Error()})
 		return
 	}
 
@@ -180,7 +168,7 @@ func (c *CustomerController) DeleteCustomer(ctx *gin.Context) {
 	intId, err := helper.ConvertStringToInt(id)
 	if err != nil {
 		log.Println("Error:", err)
-		helper.ReturnJSON(ctx, http.StatusBadRequest, err.Error(), nil)
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, err.Error(), nil, map[string]interface{}{"error": err.Error()})
 		return
 	}
 
@@ -189,10 +177,10 @@ func (c *CustomerController) DeleteCustomer(ctx *gin.Context) {
 	if err != nil {
 		log.Println("Error:", err)
 		if err.Error() == "record not found" {
-			helper.ReturnJSON(ctx, http.StatusNotFound, "Customer not found", nil)
+			helper.ReturnJSONError(ctx, http.StatusNotFound, "Customer not found", nil, map[string]interface{}{"error": "Customer not found"})
 			return
 		}
-		helper.ReturnJSON(ctx, http.StatusInternalServerError, err.Error(), nil)
+		helper.ReturnJSONError(ctx, http.StatusInternalServerError, err.Error(), nil, map[string]interface{}{"error": err.Error()})
 		return
 	}
 
@@ -215,7 +203,7 @@ func (c *CustomerController) FindCustomerById(ctx *gin.Context) {
 	intId, err := helper.ConvertStringToInt(id)
 	if err != nil {
 		log.Println("Error:", err)
-		helper.ReturnJSON(ctx, http.StatusBadRequest, err.Error(), nil)
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, err.Error(), nil, map[string]interface{}{"error": err.Error()})
 		return
 	}
 
@@ -224,10 +212,10 @@ func (c *CustomerController) FindCustomerById(ctx *gin.Context) {
 	if err != nil {
 		log.Println("Error:", err)
 		if err.Error() == "record not found" {
-			helper.ReturnJSON(ctx, http.StatusNotFound, "Customer not found", nil)
+			helper.ReturnJSONError(ctx, http.StatusNotFound, "Customer not found", nil, map[string]interface{}{"error": "Customer not found"})
 			return
 		}
-		helper.ReturnJSON(ctx, http.StatusInternalServerError, err.Error(), nil)
+		helper.ReturnJSONError(ctx, http.StatusInternalServerError, err.Error(), nil, map[string]interface{}{"error": err.Error()})
 		return
 	}
 
@@ -270,21 +258,24 @@ func (c *CustomerController) FindAllCustomer(ctx *gin.Context) {
 	// min length nameQuery is 3
 	if helper.MinLengthQueryParam(nameQuery, 3) {
 		log.Println("Error: Name min length is 3")
-		helper.ReturnJSON(ctx, http.StatusBadRequest, "You must enter at least 3 characters for name", nil)
+		errMessage := "You must enter at least 3 characters for name"
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, errMessage, nil, map[string]interface{}{"error": errMessage})
 		return
 	}
 
 	// min length emailQuery is 8
 	if helper.MinLengthQueryParam(emailQuery, 3) {
 		log.Println("Error: Email min length is 3")
-		helper.ReturnJSON(ctx, http.StatusBadRequest, "You must enter at least 8 characters for email", nil)
+		errMessage := "You must enter at least 8 characters for email"
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, errMessage, nil, map[string]interface{}{"error": errMessage})
 		return
 	}
 
 	// min length addressQuery is 8
 	if helper.MinLengthQueryParam(addressQuery, 3) {
 		log.Println("Error: Address min length is 3")
-		helper.ReturnJSON(ctx, http.StatusBadRequest, "You must enter at least 8 characters for address", nil)
+		errMessage := "You must enter at least 8 characters for address"
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, errMessage, nil, map[string]interface{}{"error": errMessage})
 		return
 	}
 
@@ -292,14 +283,14 @@ func (c *CustomerController) FindAllCustomer(ctx *gin.Context) {
 	page, err := helper.ConvertStringToInt(pageQuery)
 	if err != nil {
 		log.Println("Error:", err)
-		helper.ReturnJSON(ctx, http.StatusBadRequest, err.Error(), nil)
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, err.Error(), nil, map[string]interface{}{"error": err.Error()})
 		return
 	}
 
 	pageSize, err = helper.ConvertStringToInt(pageSizeQuery)
 	if err != nil {
 		log.Println("Error:", err)
-		helper.ReturnJSON(ctx, http.StatusBadRequest, err.Error(), nil)
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, err.Error(), nil, map[string]interface{}{"error": err.Error()})
 		return
 	}
 
@@ -317,7 +308,7 @@ func (c *CustomerController) FindAllCustomer(ctx *gin.Context) {
 
 	if err != nil {
 		log.Println("Error:", err)
-		helper.ReturnJSON(ctx, http.StatusInternalServerError, err.Error(), nil)
+		helper.ReturnJSONError(ctx, http.StatusInternalServerError, err.Error(), nil, map[string]interface{}{"error": err.Error()})
 		return
 	}
 
@@ -325,7 +316,7 @@ func (c *CustomerController) FindAllCustomer(ctx *gin.Context) {
 
 	if err != nil {
 		log.Println("Error:", err)
-		helper.ReturnJSON(ctx, http.StatusInternalServerError, err.Error(), nil)
+		helper.ReturnJSONError(ctx, http.StatusInternalServerError, err.Error(), nil, map[string]interface{}{"error": err.Error()})
 		return
 	}
 

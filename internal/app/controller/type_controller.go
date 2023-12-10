@@ -57,15 +57,9 @@ func (c *TypeController) Create(ctx *gin.Context) {
 	var req request.CreateTypeRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		fmt.Printf("%# v\n", err.Error())
-		if err.Error() == "EOF" {
-			log.Println("Error: Request body is empty")
-			helper.ReturnJSON(ctx, http.StatusBadRequest, "Request body is empty", nil)
-			return
-		}
-		returnDataErrorCheck := helper.ExtractFieldNameFromError(err.Error())
-		log.Println("Error: Validation error")
-		helper.ReturnJSON(ctx, http.StatusBadRequest, "Validation error", returnDataErrorCheck)
+		message, data := helper.GlobalCheckingErrorBindJson(err.Error())
+		log.Println(fmt.Sprintf("Error: %s", message))
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, message, nil, data)
 		return
 	}
 
@@ -73,7 +67,7 @@ func (c *TypeController) Create(ctx *gin.Context) {
 
 	if len(res) > 0 {
 		log.Println("Error: Validation error")
-		helper.ReturnJSON(ctx, http.StatusBadRequest, "Validation error", res)
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, "Validation error", nil, res)
 		return
 	}
 
@@ -81,13 +75,13 @@ func (c *TypeController) Create(ctx *gin.Context) {
 	findByName, err := c.typeService.FindByName(req.Name)
 	if err != nil {
 		if err.Error() != "record not found" {
-			helper.ReturnJSON(ctx, 500, err.Error(), nil)
+			helper.ReturnJSONError(ctx, 500, err.Error(), nil, err.Error())
 			return
 		}
 	}
 
 	if findByName != nil {
-		helper.ReturnJSON(ctx, 400, "Type already exist", nil)
+		helper.ReturnJSONError(ctx, 400, "Type already exist", nil, map[string]string{"name": "Type already exist"})
 		return
 	}
 
@@ -99,7 +93,7 @@ func (c *TypeController) Create(ctx *gin.Context) {
 
 	typeId, err := c.typeService.Create(typeItem)
 	if err != nil {
-		helper.ReturnJSON(ctx, 500, err.Error(), nil)
+		helper.ReturnJSONError(ctx, 500, err.Error(), nil, map[string]string{"error": err.Error()})
 		return
 	}
 
@@ -125,20 +119,14 @@ func (c *TypeController) Update(ctx *gin.Context) {
 	intId, err := helper.ConvertStringToInt(id)
 	if err != nil {
 		log.Println("Error:", err)
-		helper.ReturnJSON(ctx, http.StatusBadRequest, err.Error(), nil)
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, err.Error(), nil, map[string]string{"error": err.Error()})
 		return
 	}
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		fmt.Printf("%# v\n", err.Error())
-		if err.Error() == "EOF" {
-			log.Println("Error: Request body is empty")
-			helper.ReturnJSON(ctx, http.StatusBadRequest, "Request body is empty", nil)
-			return
-		}
-		returnDataErrorCheck := helper.ExtractFieldNameFromError(err.Error())
-		log.Println("Error: Validation error")
-		helper.ReturnJSON(ctx, http.StatusBadRequest, "Validation error", returnDataErrorCheck)
+		message, data := helper.GlobalCheckingErrorBindJson(err.Error())
+		log.Println(fmt.Sprintf("Error: %s", message))
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, message, nil, data)
 		return
 	}
 
@@ -146,7 +134,7 @@ func (c *TypeController) Update(ctx *gin.Context) {
 
 	if len(res) > 0 {
 		log.Println("Error: Validation error")
-		helper.ReturnJSON(ctx, http.StatusBadRequest, "Validation error", res)
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, "Validation error", nil, res)
 		return
 	}
 
@@ -154,13 +142,13 @@ func (c *TypeController) Update(ctx *gin.Context) {
 	findByName, err := c.typeService.FindByNameAndNotId(req.Name, intId)
 	if err != nil {
 		if err.Error() != "record not found" {
-			helper.ReturnJSON(ctx, 500, err.Error(), nil)
+			helper.ReturnJSONError(ctx, 500, err.Error(), nil, map[string]string{"error": err.Error()})
 			return
 		}
 	}
 
 	if findByName != nil {
-		helper.ReturnJSON(ctx, 400, "Type already exist", nil)
+		helper.ReturnJSONError(ctx, 400, "Type already exist", nil, map[string]string{"name": "Type already exist"})
 		return
 	}
 
@@ -172,10 +160,10 @@ func (c *TypeController) Update(ctx *gin.Context) {
 	typeId, err := c.typeService.UpdateById(intId, typeItem)
 	if err != nil {
 		if err.Error() == "record not found" {
-			helper.ReturnJSON(ctx, http.StatusNotFound, "Type not found", nil)
+			helper.ReturnJSONError(ctx, http.StatusNotFound, "Type not found", nil, map[string]string{"error": "Type not found"})
 			return
 		}
-		helper.ReturnJSON(ctx, 500, err.Error(), nil)
+		helper.ReturnJSONError(ctx, 500, err.Error(), nil, map[string]string{"error": err.Error()})
 		return
 	}
 
@@ -198,17 +186,17 @@ func (c *TypeController) Delete(ctx *gin.Context) {
 	intId, err := helper.ConvertStringToInt(id)
 	if err != nil {
 		log.Println("Error:", err)
-		helper.ReturnJSON(ctx, http.StatusBadRequest, err.Error(), nil)
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, err.Error(), nil, map[string]string{"error": err.Error()})
 		return
 	}
 
 	err = c.typeService.SoftDelete(intId)
 	if err != nil {
 		if err.Error() == "record not found" {
-			helper.ReturnJSON(ctx, http.StatusNotFound, "Type not found", nil)
+			helper.ReturnJSONError(ctx, http.StatusNotFound, "Type not found", nil, map[string]string{"error": "Type not found"})
 			return
 		}
-		helper.ReturnJSON(ctx, http.StatusInternalServerError, err.Error(), nil)
+		helper.ReturnJSONError(ctx, http.StatusInternalServerError, err.Error(), nil, map[string]string{"error": err.Error()})
 		return
 	}
 
