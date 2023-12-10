@@ -89,7 +89,7 @@ func (r *invoiceRepo) FindAll(filter filters.InvoiceFilter, page int, pageSize i
 // FindById implements repositories.InvoiceRepo.
 func (r *invoiceRepo) FindById(id int) (*model.Invoice, error) {
 	var invoice model.Invoice
-	err := r.db.First(&invoice, id).Error
+	err := r.db.Preload("Customer").Preload("InvoiceItem").Preload("InvoiceItem.Item").Preload("InvoiceItem.Item.Type").First(&invoice, id).Error
 	return &invoice, err
 }
 

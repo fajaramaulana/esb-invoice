@@ -59,3 +59,32 @@ func (c *InvoiceController) CreateInvoice(ctx *gin.Context) {
 
 	helper.ReturnJSON(ctx, http.StatusCreated, "Invoice created", idInvoice)
 }
+
+// GetInvoice by id
+// @Summary Get invoice by id
+// @Description Get invoice by id
+// @Tags invoice
+// @Produce  json
+// @Param id path int true "Invoice ID"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.ResponseError
+// @Failure 500 {object} response.ResponseError
+// @Router /api/v1/invoice/{id} [get]
+func (c *InvoiceController) FindInvoiceById(ctx *gin.Context) {
+	id := ctx.Param("id")
+	intId, err := helper.ConvertStringToInt(id)
+	if err != nil {
+		log.Println("Error:", err)
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, err.Error(), nil, map[string]interface{}{"error": err.Error()})
+		return
+	}
+
+	invoice, err := c.invoiceService.GetInvoice(intId)
+	if err != nil {
+		log.Println(fmt.Sprintf("Error: %s", err.Error()))
+		helper.ReturnJSONError(ctx, http.StatusInternalServerError, err.Error(), nil, nil)
+		return
+	}
+
+	helper.ReturnJSON(ctx, http.StatusOK, "Invoice found", invoice)
+}

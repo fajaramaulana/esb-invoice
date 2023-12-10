@@ -2,6 +2,7 @@ package service
 
 import (
 	"esb-invoice/internal/app/handler/request"
+	"esb-invoice/internal/app/handler/response"
 	"esb-invoice/internal/domain/model"
 	"esb-invoice/internal/domain/repository"
 	"fmt"
@@ -154,4 +155,62 @@ func (s *InvoiceService) Create(req *request.CreateInvoiceRequest) (int, error) 
 	}
 
 	return invoiceId, nil
+}
+
+func (s *InvoiceService) GetInvoice(id int) (*response.InvoiceResponse, error) {
+	invoice, err := s.invoiceRepo.FindById(id)
+	var responseInvoice response.InvoiceResponse
+	var ItemInsideInvoice []response.ItemInsideInvoice
+
+	for _, v := range invoice.InvoiceItem {
+		ItemInsideInvoice = append(ItemInsideInvoice, response.ItemInsideInvoice{
+			ID:         v.ID,
+			InvoiceID:  v.InvoiceID,
+			ItemID:     v.ItemID,
+			Quantity:   v.Quantity,
+			UnitPrice:  v.UnitPrice,
+			TotalPrice: v.TotalPrice,
+			Item: response.DetailItemInsideInvoice{
+				ID:     v.Item.ID,
+				Name:   v.Item.Name,
+				Price:  v.Item.Price,
+				TypeID: v.Item.TypeID,
+				Type: response.TypeInsideInvoice{
+					ID:   v.Item.Type.ID,
+					Name: v.Item.Type.Name,
+				},
+			},
+		})
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if invoice == nil {
+		return nil, fmt.Errorf("invoice id %d not found", id)
+	}
+
+	responseInvoice = response.InvoiceResponse{
+		InvoiceId:     invoice.InvoiceID,
+		Subject:       invoice.Subject,
+		IssueDate:     invoice.IssueDate.Format("02/01/2006"),
+		DueDate:       invoice.DueDate.Format("02/01/2006"),
+		CustomerId:    invoice.CustomerID,
+		PaymentStatus: invoice.PaymentStatus,
+		TotalItem:     invoice.TotalItem,
+		Subtotal:      invoice.Subtotal,
+		TaxRate:       invoice.TaxRate,
+		TaxAmount:     invoice.TaxAmount,
+		TotalAmount:   invoice.TotalAmount,
+		InvoiceItem:   ItemInsideInvoice,
+		Customer: response.CustomerInsideInvoice{
+			ID:      invoice.Customer.ID,
+			Name:    invoice.Customer.Name,
+			Email:   invoice.Customer.Email,
+			Address: invoice.Customer.Address,
+		},
+	}
+
+	return &responseInvoice, nil
 }

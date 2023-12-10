@@ -13,6 +13,7 @@ type InvoiceItem struct {
 	Quantity   int            `gorm:"not null" json:"quantity"`
 	UnitPrice  float64        `gorm:"not null; type:decimal(10,2)" json:"unit_price"`
 	TotalPrice float64        `gorm:"not null; type:decimal(10,2)" json:"total_price"`
+	Item       Item           `gorm:"foreignKey:ItemID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"item"`
 	CreatedAt  time.Time      `json:"createdAt" gorm:"not null"`
 	UpdatedAt  time.Time      `json:"updatedAt" gorm:"not null, autoUpdateTime"`
 	DeletedAt  gorm.DeletedAt `gorm:"index" json:"deletedAt,omitempty"`
