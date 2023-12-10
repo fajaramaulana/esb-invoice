@@ -110,6 +110,12 @@ func (r *customerRepo) UpdateById(id int, update *model.Customer) (*model.Custom
 	return &existingCustomer, nil
 }
 
+func (r *customerRepo) FindByEmailAndNotId(email string, id int) (*model.Customer, error) {
+	var customer model.Customer
+	err := r.db.Where("email = ?", email).Not("id = ?", id).First(&customer).Error
+	return &customer, err
+}
+
 func (r *customerRepo) FindByEmail(email string) (*model.Customer, error) {
 	var customer model.Customer
 	err := r.db.Where("email = ?", email).First(&customer).Error

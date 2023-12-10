@@ -27,7 +27,7 @@ func NewCustomerController(customerService *service.CustomerService) *CustomerCo
 // @Summary Create User
 // @Description Create User
 // @Tags Customer
-// @Accept  form-data
+// @Accept  json
 // @Produce  json
 // @Param user body request.CreateCustomerRequest true "Customer"
 // @Success 201 {object} response.ReturnResponseCreate
@@ -38,9 +38,13 @@ func (c *CustomerController) CreateCustomer(ctx *gin.Context) {
 	var req request.CreateCustomerRequest
 
 	// Bind request body to struct
-	// If the structure of the body is wrong, return an HTTP error with status code 400
-	// request should json or form-data
-	if err := ctx.ShouldBind(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		fmt.Printf("%# v\n", err.Error())
+		if err.Error() == "EOF" {
+			log.Println("Error: Request body is empty")
+			helper.ReturnJSON(ctx, http.StatusBadRequest, "Request body is empty", nil)
+			return
+		}
 		returnDataErrorCheck := helper.ExtractFieldNameFromError(err.Error())
 		log.Println("Error: Validation error")
 		helper.ReturnJSON(ctx, http.StatusBadRequest, "Validation error", returnDataErrorCheck)
@@ -106,9 +110,13 @@ func (c *CustomerController) UpdateCustomer(ctx *gin.Context) {
 	}
 
 	// Bind request body to struct
-	// If the structure of the body is wrong, return an HTTP error with status code 400
-	// request should json or form-data
-	if err := ctx.ShouldBind(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		fmt.Printf("%# v\n", err.Error())
+		if err.Error() == "EOF" {
+			log.Println("Error: Request body is empty")
+			helper.ReturnJSON(ctx, http.StatusBadRequest, "Request body is empty", nil)
+			return
+		}
 		returnDataErrorCheck := helper.ExtractFieldNameFromError(err.Error())
 		log.Println("Error: Validation error")
 		helper.ReturnJSON(ctx, http.StatusBadRequest, "Validation error", returnDataErrorCheck)
@@ -124,12 +132,15 @@ func (c *CustomerController) UpdateCustomer(ctx *gin.Context) {
 	}
 
 	// check if email already exist
-	checkByEmail, err := c.customerService.FindByEmail(req.Email)
+	checkByEmail, err := c.customerService.FindByEmailAndNotId(req.Email, intId)
 	if err != nil {
-		log.Println("Error:", err)
-		if err.Error() == "record not found" {
-			helper.ReturnJSON(ctx, http.StatusNotFound, "Customer not found", nil)
-			return
+		if err.Error() != "record not found" {
+			fmt.Printf("%# v\n", err.Error())
+			log.Println("Error:", err)
+			if err.Error() == "record not found" {
+				helper.ReturnJSON(ctx, http.StatusNotFound, "Customer not found", nil)
+				return
+			}
 		}
 	}
 

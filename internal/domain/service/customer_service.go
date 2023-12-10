@@ -107,6 +107,16 @@ func (s *CustomerService) SoftDelete(id int) error {
 	return nil
 }
 
+func (s *CustomerService) FindByEmailAndNotId(email string, id int) (*model.Customer, error) {
+	customer, err := s.customerRepo.FindByEmailAndNotId(email, id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return customer, nil
+}
+
 func (s *CustomerService) FindByEmail(email string) (*model.Customer, error) {
 	customer, err := s.customerRepo.FindByEmail(email)
 
