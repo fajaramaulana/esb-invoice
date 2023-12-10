@@ -21,3 +21,8 @@ type UpdateTypeResponse struct {
 type DeleteTypeResponse struct {
 	ID int `json:"id"`
 }
+
+type TypeOnItemResponse struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}

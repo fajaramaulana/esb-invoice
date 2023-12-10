@@ -21,6 +21,9 @@ type ItemRepo interface {
 	FindAll(filter filters.ItemFilter, page int, pageSize int) ([]model.Item, int64, error)
 	UpdateById(id int, update *model.Item) (*model.Item, error)
 	SoftDelete(id int) error
+	CountAll() (int64, error)
+	FindByItemName(name string) (*model.Item, error)
+	FindByNameAndNotId(name string, id int) (*model.Item, error)
 }
 
 type CustomerRepo interface {

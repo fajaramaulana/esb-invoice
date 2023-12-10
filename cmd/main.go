@@ -48,17 +48,20 @@ func main() {
 	// repository
 	customerRepository := gorm.NewCustomerRepository(dbInstance)
 	typeItemRepository := gorm.NewTypeRepository(dbInstance)
+	itemRepository := gorm.NewItemRepository(dbInstance)
 
 	// service
 	customerService := service.NewCustomerService(customerRepository)
 	typeItemService := service.NewTypeService(typeItemRepository)
+	itemService := service.NewItemService(itemRepository, typeItemRepository)
 
 	// controller
 	customerController := controller.NewCustomerController(customerService)
 	typeItemController := controller.NewTypeController(typeItemService)
+	itemController := controller.NewItemController(itemService)
 
 	// router
-	app := router.NewRouter(customerController, typeItemController)
+	app := router.NewRouter(customerController, typeItemController, itemController)
 
 	app.SetupRouter(os.Getenv("PORT"))
 }

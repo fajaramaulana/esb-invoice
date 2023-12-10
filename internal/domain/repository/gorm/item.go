@@ -27,7 +27,7 @@ func (r *itemRepo) Create(item *model.Item) (int, error) {
 // FindById implements repositories.ItemRepo.
 func (r *itemRepo) FindById(id int) (*model.Item, error) {
 	var item model.Item
-	err := r.db.First(&item, id).Error
+	err := r.db.Preload("Type").First(&item, id).Error
 	return &item, err
 }
 
@@ -76,36 +76,48 @@ func (r *itemRepo) FindAll(filter filters.ItemFilter, page int, pageSize int) ([
 	var items []model.Item
 	var totalRecords int64
 
-	query := r.db.Model(&model.Item{})
-
+	query := r.db.Model(&model.Item{}).Preload("Type").Order("items.id DESC")
 	if query.Error != nil {
 		return nil, 0, query.Error
 	}
 
-	// Apply filters based on the ItemFilter
-	if filter.ItemName != "" {
-		query = query.Where("name = ?", filter.ItemName)
+	// Apply filters based on the Name for item name or type name
+	if filter.Name != "" {
+		// join table types
+		query = query.Where("items.name LIKE ?", "%"+filter.Name+"%").Or("types.name LIKE ?", "%"+filter.Name+"%").Joins("JOIN types ON types.id = items.type_id")
 	}
-
-	if filter.TypeName != "" {
-		// query join to types table
-		query = query.Joins("JOIN types ON types.id = items.type_id")
-		query = query.Where("types.name = ?", filter.TypeName)
-	}
-
 	// end filter
 
 	// Pagination
 	offset := (page - 1) * pageSize
 
-	if err := query.Count(&totalRecords).Error; err != nil {
-		return nil, 0, err
-	}
-
 	if err := query.Offset(offset).Limit(pageSize).Find(&items).Error; err != nil {
 		return nil, 0, err
 	}
 
-	return items, totalRecords, nil
+	if err := query.Count(&totalRecords).Error; err != nil {
+		return nil, 0, err
+	}
 
+	return items, totalRecords, nil
+}
+
+func (r *itemRepo) CountAll() (int64, error) {
+	var count int64
+	if err := r.db.Model(&model.Item{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (r *itemRepo) FindByItemName(name string) (*model.Item, error) {
+	var item model.Item
+	err := r.db.Where("name = ?", name).First(&item).Error
+	return &item, err
+}
+
+func (r *itemRepo) FindByNameAndNotId(name string, id int) (*model.Item, error) {
+	var item model.Item
+	err := r.db.Where("name = ? AND id != ?", name, id).First(&item).Error
+	return &item, err
 }

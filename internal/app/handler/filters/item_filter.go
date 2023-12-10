@@ -1,8 +1,7 @@
 package filters
 
 type ItemFilter struct {
-	ItemName string `json:"item_name"`
-	TypeName string `json:"type_name"`
+	Name string `json:"name"`
 }
 
 func NewItemFilter() *ItemFilter {
