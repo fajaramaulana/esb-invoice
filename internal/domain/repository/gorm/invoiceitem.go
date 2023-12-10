@@ -86,3 +86,18 @@ func (r *invoiceitemRepo) UpdateById(tx *gorm.DB, id int, update *model.InvoiceI
 
 	return &existingInvoiceItem, nil
 }
+
+func (r *invoiceitemRepo) SoftDeleteInvoiceItemByInvoiceId(tx *gorm.DB, id int) error {
+	// soft delete invoice item by invoice id
+	result := tx.Where("invoice_id = ?", id).Delete(&model.InvoiceItem{})
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
+	return nil
+}

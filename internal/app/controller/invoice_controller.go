@@ -216,31 +216,31 @@ func (c *InvoiceController) UpdateInvoice(ctx *gin.Context) {
 	helper.ReturnJSON(ctx, http.StatusOK, "Invoice updated", response.UpdateInvoiceResponse{Id: int(invoice.InvoiceId)})
 }
 
-// // soft delete invoice
-// // @Summary Soft delete invoice
-// // @Description Soft delete invoice
-// // @Tags invoice
-// // @Produce  json
-// // @Param id path int true "Invoice ID"
-// // @Success 200 {object} response.Response
-// // @Failure 400 {object} response.ResponseError
-// // @Failure 500 {object} response.Response
-// // @Router /api/v1/invoice/{id} [delete]
-// func (c *InvoiceController) DeleteInvoice(ctx *gin.Context) {
-// 	id := ctx.Param("id")
-// 	intId, err := helper.ConvertStringToInt(id)
-// 	if err != nil {
-// 		log.Println("Error:", err)
-// 		helper.ReturnJSONError(ctx, http.StatusBadRequest, err.Error(), nil, map[string]interface{}{"error": err.Error()})
-// 		return
-// 	}
+// soft delete invoice
+// @Summary Soft delete invoice
+// @Description Soft delete invoice
+// @Tags invoice
+// @Produce  json
+// @Param id path int true "Invoice ID"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.ResponseError
+// @Failure 500 {object} response.Response
+// @Router /api/v1/invoice/{id} [delete]
+func (c *InvoiceController) DeleteInvoice(ctx *gin.Context) {
+	id := ctx.Param("id")
+	intId, err := helper.ConvertStringToInt(id)
+	if err != nil {
+		log.Println("Error:", err)
+		helper.ReturnJSONError(ctx, http.StatusBadRequest, err.Error(), nil, map[string]interface{}{"error": err.Error()})
+		return
+	}
 
-// 	err = c.invoiceService.SoftDelete(intId)
-// 	if err != nil {
-// 		log.Println(fmt.Sprintf("Error: %s", err.Error()))
-// 		helper.ReturnJSONError(ctx, http.StatusInternalServerError, err.Error(), nil, nil)
-// 		return
-// 	}
+	err = c.invoiceService.SoftDelete(intId)
+	if err != nil {
+		log.Println(fmt.Sprintf("Error: %s", err.Error()))
+		helper.ReturnJSONError(ctx, http.StatusInternalServerError, err.Error(), nil, nil)
+		return
+	}
 
-// 	helper.ReturnJSON(ctx, http.StatusOK, "Invoice deleted", nil)
-// }
+	helper.ReturnJSON(ctx, http.StatusOK, "Invoice deleted", nil)
+}

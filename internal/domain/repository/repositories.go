@@ -45,7 +45,7 @@ type InvoiceRepo interface {
 	FindAll(filter filters.InvoiceFilter, page int, pageSize int) ([]model.Invoice, int64, error)
 	UpdateById(tx *gorm.DB, id int, update *model.Invoice) (*model.Invoice, error)
 	UpdateStatusPaid(id int, paymentStatus int) (*model.Invoice, error)
-	SoftDelete(id int) error
+	SoftDelete(tx *gorm.DB, id int) error
 	CountAll() (int64, error)
 }
 
@@ -55,4 +55,5 @@ type InvoiceItemRepo interface {
 	FindByInvoiceId(idInvoice int) ([]model.InvoiceItem, error)
 	UpdateById(tx *gorm.DB, id int, update *model.InvoiceItem) (*model.InvoiceItem, error)
 	SoftDelete(tx *gorm.DB, id int) error
+	SoftDeleteInvoiceItemByInvoiceId(tx *gorm.DB, id int) error
 }

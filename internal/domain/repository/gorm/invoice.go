@@ -101,8 +101,8 @@ func (r *invoiceRepo) FindById(id int) (*model.Invoice, error) {
 }
 
 // SoftDelete implements repositories.InvoiceRepo.
-func (r *invoiceRepo) SoftDelete(id int) error {
-	result := r.db.Delete(&model.Invoice{}, id)
+func (r *invoiceRepo) SoftDelete(tx *gorm.DB, id int) error {
+	result := tx.Delete(&model.Invoice{}, id)
 
 	if result.Error != nil {
 		return result.Error

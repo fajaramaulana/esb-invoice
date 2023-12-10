@@ -366,7 +366,7 @@ func (s *InvoiceService) Update(id int, req *request.UpdateInvoiceRequest) (*res
 	// count totalPrice per item
 
 	for _, item := range req.InvoiceItems {
-		if item.IsDeleted == false 
+		if item.IsDeleted == false {
 			totalItem += item.Quantity
 			subTotal += float64(item.Quantity) * item.Price
 		}
@@ -524,4 +524,41 @@ func (s *InvoiceService) Update(id int, req *request.UpdateInvoiceRequest) (*res
 
 	return &responseInvoice, nil
 
+}
+
+func (s *InvoiceService) SoftDelete(id int) error {
+	tx := s.db.Begin()
+
+	// check invoice id
+	invoiceData, err := s.invoiceRepo.FindById(id)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return fmt.Errorf("invoice not found")
+		}
+		return err
+	}
+
+	if invoiceData == nil {
+		return fmt.Errorf("invoice not found")
+	}
+
+	err = s.invoiceRepo.SoftDelete(tx, id)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// delete invoice item
+	err = s.invoiceItemRepo.SoftDeleteInvoiceItemByInvoiceId(tx, id)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err = tx.Commit().Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -61,6 +61,7 @@ func (r *router) SetupRouter(port string) {
 	v1.GET("/invoice/:id", r.invoice.FindInvoiceById)
 	v1.POST("/invoice", r.invoice.CreateInvoice)
 	v1.PUT("/invoice/:id", r.invoice.UpdateInvoice)
+	v1.DELETE("/invoice/:id", r.invoice.DeleteInvoice)
 
 	r.router.GET("/swaggerr/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
